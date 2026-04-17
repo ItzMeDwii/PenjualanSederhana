@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="id">
   <head>
     <meta charset="UTF-8" />
     <meta
@@ -8,16 +8,26 @@
     />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <title>Form Penjualan Barang</title>
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="SimplePOS" />
+    <meta name="description" content="Aplikasi penjualan barang sederhana" />
+    <title>SimplePOS</title>
     <link
       rel="icon"
       href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍉</text></svg>"
     />
     <link rel="manifest" href="manifest.json" />
-    <meta name="theme-color" content="#4CAF50" />
+    <meta name="theme-color" content="#34495e" />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"
     />
     <link rel="stylesheet" href="style.css" />
     <script>
@@ -127,7 +137,16 @@
           </li>
         </ul>
       </div>
-      <div style="padding:12px 16px;font-size:11px;color:#888;border-top:1px solid rgba(255,255,255,0.1);margin-top:auto;" id="swVersionLabel"></div>
+      <div
+        style="
+          padding: 12px 16px;
+          font-size: 11px;
+          color: #888;
+          border-top: 1px solid rgba(255, 255, 255, 0.1);
+          margin-top: auto;
+        "
+        id="swVersionLabel"
+      ></div>
     </div>
 
     <div
@@ -495,11 +514,57 @@
       <span class="badge" id="cartBadge">0</span>
     </button>
 
-    <div id="installBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#1e1e2e;color:#fff;padding:14px 16px;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 -2px 12px rgba(0,0,0,0.4);">
-      <span style="font-size:14px;"><i class="fas fa-download" style="margin-right:8px;"></i>Pasang aplikasi ini ke perangkat?</span>
-      <div style="display:flex;gap:8px;flex-shrink:0;">
-        <button id="installBannerAccept" style="background:#7c3aed;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer;">Pasang</button>
-        <button id="installBannerDismiss" style="background:transparent;color:#aaa;border:1px solid #444;border-radius:8px;padding:8px 12px;font-size:13px;cursor:pointer;">Nanti</button>
+    <div
+      id="installBanner"
+      style="
+        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 9999;
+        background: #1e1e2e;
+        color: #fff;
+        padding: 14px 16px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.4);
+      "
+    >
+      <span style="font-size: 14px"
+        ><i class="fas fa-download" style="margin-right: 8px"></i>Pasang
+        aplikasi ini ke perangkat?</span
+      >
+      <div style="display: flex; gap: 8px; flex-shrink: 0">
+        <button
+          id="installBannerAccept"
+          style="
+            background: #7c3aed;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 13px;
+            cursor: pointer;
+          "
+        >
+          Pasang
+        </button>
+        <button
+          id="installBannerDismiss"
+          style="
+            background: transparent;
+            color: #aaa;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 13px;
+            cursor: pointer;
+          "
+        >
+          Nanti
+        </button>
       </div>
     </div>
 
@@ -796,10 +861,6 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"
-    />
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <script src="js/state.js"></script>
     <script src="js/utils.js"></script>
