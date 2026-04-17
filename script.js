@@ -1,9 +1,11 @@
 function adjustContentMargin() {
   const menuBarHeight = document.querySelector('.menu-bar').offsetHeight;
   const navbarHeight = document.querySelector('.navbar').offsetHeight;
-  const totalHeight = menuBarHeight + navbarHeight + 0;
+  const tagFilterBar = document.getElementById('globalTagFilterBar');
+  const tagFilterHeight = (tagFilterBar && tagFilterBar.style.display !== 'none') ? tagFilterBar.offsetHeight : 0;
+  const totalHeight = menuBarHeight + navbarHeight + tagFilterHeight + 0;
   document.body.style.marginTop = totalHeight + 'px';
-  document.documentElement.style.setProperty('--total-header-height', `${totalHeight}px`);
+  document.documentElement.style.setProperty('--total-header-height', `${menuBarHeight + navbarHeight}px`);
 }
 
 
@@ -40,7 +42,9 @@ let promoRules = [];
 let paymentMethods = [];
 let transferMethods = [];
 let isDeleteMode = false;
-let selectedProductsForDelete = new Set(); 
+let selectedProductsForDelete = new Set();
+let activeTagFilters = {};
+let editingPreOrderIndex = null;
 let longPressTimer = null;
 let currentLongPressProduct = null;
 let selectedPaymentMethod = '';
@@ -474,6 +478,12 @@ function showTab(tabName) {
     searchResultsTab.classList.remove('active');
   }
 
+  // Render tag filter bar for the newly active tab
+  renderTagFilterBar(tabName);
+  if (tabName === '__all__') {
+    renderAllProductsTab();
+  }
+
   document.getElementById('searchInput').value = '';
   document.getElementById('clearSearchButton').style.display = 'none';
 }
@@ -492,8 +502,192 @@ function loadActiveTab() {
   }
 }
 
+function renderTagFilterBar(category) {
+  const globalBar = document.getElementById('globalTagFilterBar');
+  if (!globalBar) return;
+
+  // Collect all unique tags — for __all__, scan every category
+  const allTags = new Set();
+  if (category === '__all__') {
+    categories.filter(c => c && typeof c === 'string').forEach(cat => {
+      if (data[cat]) {
+        data[cat].forEach(item => {
+          if (item.tags && Array.isArray(item.tags)) item.tags.forEach(t => allTags.add(t));
+        });
+      }
+    });
+  } else if (data[category]) {
+    data[category].forEach(item => {
+      if (item.tags && Array.isArray(item.tags)) {
+        item.tags.forEach(t => allTags.add(t));
+      }
+    });
+  }
+
+  if (allTags.size === 0) {
+    globalBar.innerHTML = '';
+    globalBar.style.display = 'none';
+    document.documentElement.style.setProperty('--tag-filter-height', '0px');
+    adjustContentMargin();
+    return;
+  }
+
+  const activeTags = activeTagFilters[category] || new Set();
+
+  let html = `<button class="tag-filter-btn ${activeTags.size === 0 ? 'active' : ''}" onclick="resetTagFilter('${category}')">Semua</button>`;
+  [...allTags].sort().forEach(tag => {
+    const isActive = activeTags.has(tag);
+    html += `<button class="tag-filter-btn ${isActive ? 'active' : ''}" onclick="toggleTagFilter('${category}', '${escapeHtml(tag)}')">${escapeHtml(tag)}</button>`;
+  });
+
+  globalBar.innerHTML = html;
+  globalBar.style.display = 'flex';
+
+  // Let the browser paint, then measure and adjust margin
+  requestAnimationFrame(() => {
+    const h = globalBar.offsetHeight;
+    document.documentElement.style.setProperty('--tag-filter-height', `${h}px`);
+    adjustContentMargin();
+  });
+}
+
+function toggleTagFilter(category, tag) {
+  if (!activeTagFilters[category]) {
+    activeTagFilters[category] = new Set();
+  }
+  if (activeTagFilters[category].has(tag)) {
+    activeTagFilters[category].delete(tag);
+  } else {
+    activeTagFilters[category].add(tag);
+  }
+  renderProducts();
+}
+
+function resetTagFilter(category) {
+  activeTagFilters[category] = new Set();
+  renderProducts();
+}
+
+function renderAllProductsTab() {
+  const container = document.getElementById('__all__-list');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const activeTags = activeTagFilters['__all__'] || new Set();
+
+  const allItems = [];
+  categories.filter(c => c && typeof c === 'string').forEach(category => {
+    if (data[category] && Array.isArray(data[category])) {
+      data[category].forEach((item, index) => {
+        // Apply tag filter
+        if (activeTags.size > 0) {
+          const itemTags = item.tags || [];
+          if (![...activeTags].every(tag => itemTags.includes(tag))) return;
+        }
+        allItems.push({ item, category, index });
+      });
+    }
+  });
+
+  allItems.sort((a, b) => naturalCompare(a.item, b.item));
+
+  allItems.forEach(({ item, category, index }) => {
+    const isOutOfStock = item.stock <= 0;
+    const hasNoArtist = !item.artist || item.artist.trim() === '';
+    const cartItem = cart.find(c => c.name === item.code || c.name === item.name);
+    const cartQty = cartItem ? cartItem.qty : 0;
+    const productId = `${category}|${index}`;
+    const tagsHtml = (item.tags && item.tags.length > 0)
+      ? `<div class="product-tags">${item.tags.map(t => `<span class="product-tag">${escapeHtml(t)}</span>`).join('')}</div>`
+      : '';
+
+    const card = document.createElement('div');
+    card.className = 'product-card';
+    card.setAttribute('data-category', category);
+    card.setAttribute('data-index', index);
+    card.innerHTML = `
+      <div class="product-img-container" data-product-id="${productId}">
+        ${cartQty > 0 ? `<div class="product-badge">${cartQty}</div>` : ''}
+        ${item.code ? `<div class="product-code-badge">${item.code}</div>` : ''}
+        <img src="${item.image}" class="product-img" alt="${item.name}" loading="lazy">
+      </div>
+      <div class="product-info">
+        <div>
+          ${hasNoArtist ?
+            `<div class="product-artist no-artist" style="font-size: 14px;">    Tanpa Artist</div>` :
+            `<div class="product-artist has-artist" style="font-size: 14px;">   ${escapeHtml(item.artist)}</div>`
+          }
+          <div class="product-price">Rp${formatRupiah(item.price)}</div>
+          <div class="stock-info-container">
+            <div class="stock-info">
+              <span class="stock-label">Stok: <span class="stock-value">${item.stock}</span></span>
+            </div>
+          </div>
+          ${tagsHtml}
+        </div>
+        <div class="quantity-controls">
+          <button onclick="decreaseQuantity('${category}', ${index})" ${isOutOfStock ? 'disabled' : ''}>−</button>
+          <input type="text" value="${cartQty}" id="qty-${category}-${index}" readonly />
+          <button onclick="increaseQuantity('${category}', ${index})" ${isOutOfStock ? 'disabled' : ''}>+</button>
+        </div>
+        <div class="button-group">
+          <button class="action-btn btn-edit" onclick="editProduct('${category}', ${index}); event.stopPropagation();"><i class="fas fa-pencil-alt"></i></button>
+          <button class="action-btn btn-delete" onclick="deleteProduct('${category}', ${index}); event.stopPropagation();"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+    `;
+
+    const imgContainer = card.querySelector('.product-img-container');
+    const buttonGroup = card.querySelector('.button-group');
+
+    imgContainer.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (card.dataset.longPressJustTriggered === 'true') { e.preventDefault(); e.stopImmediatePropagation(); return; }
+      if (card.dataset.longPressTriggered === 'true') { e.preventDefault(); e.stopImmediatePropagation(); return; }
+      if (isDeleteMode) { toggleProductSelection(card); return; }
+      document.querySelectorAll('.button-group').forEach(group => {
+        if (group !== buttonGroup && group.style.display === 'flex') {
+          group.style.animation = 'fadeOutDown 0.2s forwards';
+          setTimeout(() => { group.style.display = 'none'; }, 200);
+        }
+      });
+      if (buttonGroup.style.display === 'flex') {
+        buttonGroup.style.animation = 'fadeOutDown 0.2s forwards';
+        setTimeout(() => { buttonGroup.style.display = 'none'; }, 200);
+      } else {
+        buttonGroup.style.display = 'flex';
+        buttonGroup.style.animation = 'fadeInUp 0.2s forwards';
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (buttonGroup.style.display === 'flex' && !card.contains(e.target)) {
+        buttonGroup.style.animation = 'fadeOutDown 0.2s forwards';
+        setTimeout(() => { buttonGroup.style.display = 'none'; }, 200);
+      }
+    });
+
+    setupLongPressOnProductCard(card, category, index);
+    container.appendChild(card);
+  });
+}
+
 function renderProducts() {
   const validCategories = categories.filter(cat => cat && typeof cat === 'string');
+
+  // Render tag filter bar only for the active category
+  const activeCategory = localStorage.getItem('activeTab');
+  if (activeCategory && activeCategory !== '__all__') {
+    renderTagFilterBar(activeCategory);
+  } else if (activeCategory === '__all__') {
+    renderTagFilterBar('__all__');
+  }
+
+  // Refresh all-items tab if it's rendered
+  if (document.getElementById('__all__-list')) {
+    renderAllProductsTab();
+  }
+
   validCategories.forEach(category => {
     const container = document.getElementById(`${category}-list`);
     if (!container) {
@@ -505,7 +699,18 @@ function renderProducts() {
 
     if (data[category] && Array.isArray(data[category])) {
       data[category].sort(naturalCompare);
+
+      // Determine which products to show based on active tag filter
+      const activeTags = activeTagFilters[category] || new Set();
+
       data[category].forEach((item, index) => {
+        // Tag filtering
+        if (activeTags.size > 0) {
+          const itemTags = item.tags || [];
+          const hasTag = [...activeTags].every(tag => itemTags.includes(tag));
+          if (!hasTag) return;
+        }
+
         const card = document.createElement('div');
         card.className = 'product-card';
         card.setAttribute('data-category', category);
@@ -518,6 +723,10 @@ function renderProducts() {
         const cartQty = cartItem ? cartItem.qty : 0;
         
         const productId = `${category}|${index}`;
+
+        const tagsHtml = (item.tags && item.tags.length > 0)
+          ? `<div class="product-tags">${item.tags.map(t => `<span class="product-tag">${escapeHtml(t)}</span>`).join('')}</div>`
+          : '';
 
         card.innerHTML = `
           <div class="product-img-container" data-product-id="${productId}">
@@ -537,6 +746,7 @@ function renderProducts() {
                   <span class="stock-label">Stok: <span class="stock-value">${item.stock}</span></span>
                 </div>
               </div>
+              ${tagsHtml}
             </div>
             <div class="quantity-controls">
               <button onclick="decreaseQuantity('${category}', ${index})" ${isOutOfStock ? 'disabled' : ''}>−</button>
@@ -638,6 +848,22 @@ function updateNavbarCategories() {
   manageBtn.onclick = showCategoryModal;
   navbar.appendChild(manageBtn);
 
+  // "Semua" (all items) tab — inserted first
+  if (categories.filter(c => c && typeof c === 'string').length > 0) {
+    const allBtn = document.createElement('button');
+    allBtn.textContent = 'Semua';
+    allBtn.onclick = () => showTab('__all__');
+    navbar.insertBefore(allBtn, manageBtn);
+
+    if (!document.getElementById('__all__')) {
+      const allTab = document.createElement('div');
+      allTab.id = '__all__';
+      allTab.className = 'tab-content';
+      allTab.innerHTML = `<div class="product-list" id="__all__-list"></div>`;
+      tabContainer.appendChild(allTab);
+    }
+  }
+
   categories.filter(cat => cat && typeof cat === 'string').forEach(category => {
     const button = document.createElement('button');
     button.textContent = capitalizeFirstLetter(category);
@@ -655,6 +881,7 @@ function updateNavbarCategories() {
       });
       
       tabContent.innerHTML = `
+        <div class="tag-filter-bar" id="${category}-tag-filter"></div>
         <div class="product-list" id="${category}-list"></div>
         <form class="add-form" onsubmit="addProduct(event, '${category}')">
           <b>Tambah barang (${capitalizeFirstLetter(category)}) </b>
@@ -678,6 +905,8 @@ function updateNavbarCategories() {
           <input type="text" name="price" placeholder="Harga (Rp)" required oninput="formatRupiahInput(this)" inputmode="numeric" pattern="[0-9.]*" />
           <p>Stok</p>
           <input type="number" name="stock" placeholder="Stok Barang" required min="0" />
+          <label>Tags <span style="font-weight:normal;font-size:12px;color:#888;">(pisahkan koma, contoh: standard, mini)</span></label>
+          <input type="text" name="tags" placeholder="Contoh: standard, mini, A5" autocomplete="off" />
           <button type="submit"><i class="fas fa-plus"></i> Tambah Barang</button>
         </form>
       `;
@@ -1527,6 +1756,7 @@ function editProduct(category, index) {
   
   document.getElementById('editPrice').value = formatRupiah(product.price);
   document.getElementById('editStock').value = product.stock;
+  document.getElementById('editTags').value = (product.tags && product.tags.length > 0) ? product.tags.join(', ') : '';
   document.getElementById('editPreview').src = product.image;
   document.getElementById('editPreview').style.display = 'block';
   document.getElementById('editImageFile').value = '';
@@ -1543,6 +1773,8 @@ async function saveEditedProduct(event) {
     const artist = form.artist ? form.artist.value : '';
     const price = parseInt(form.price.value.replace(/[^0-9]/g, '')) || 0;
     const stock = parseInt(form.stock.value);
+    const tagsValue = form.tags ? form.tags.value : '';
+    const tags = tagsValue.split(',').map(t => t.trim().toLowerCase()).filter(t => t.length > 0);
 
     if (!name || isNaN(price) || price < 0 || isNaN(stock) || stock < 0) {
         showNotification("Harap isi semua data dengan benar!");
@@ -1580,6 +1812,7 @@ async function saveEditedProduct(event) {
     data[category][index].artist = artist;
     data[category][index].price = price;
     data[category][index].stock = stock;
+    data[category][index].tags = tags;
 
     if (artist && artist.trim() !== '' && !artists.includes(artist)) {
         artists.push(artist);
@@ -1681,6 +1914,9 @@ async function addProduct(event, category) {
   const stock = parseInt(form.stock.value);
   
   const artist = form.artist ? form.artist.value : '';
+
+  const tagsInput = form.tags ? form.tags.value : '';
+  const tags = tagsInput.split(',').map(t => t.trim().toLowerCase()).filter(t => t.length > 0);
   
   const fileInput = form.imageFile;
   const file = fileInput.pastedFile || (fileInput.files.length > 0 ? fileInput.files[0] : null);
@@ -1717,6 +1953,7 @@ async function addProduct(event, category) {
       image: compressedImage,
       price,
       stock,
+      tags,
       category
     };
 
@@ -3282,7 +3519,17 @@ function showPreOrderTab(tabId) {
   document.querySelector(`.preorder-tab[onclick*="showPreOrderTab('${tabId}')"]`).classList.add('active');
 
   if (tabId === 'listPreOrder') {
+    if (editingPreOrderIndex !== null) {
+      cancelEditPreOrder();
+    }
     renderPreOrderList();
+  }
+
+  if (tabId === 'addPreOrder' && editingPreOrderIndex === null) {
+    const addTab = document.querySelector(".preorder-tab[onclick*=\"showPreOrderTab('addPreOrder')\"]")
+    if (addTab) addTab.innerHTML = '<i class="fas fa-plus"></i> Tambah PreOrder';
+    const title = document.getElementById('addPreOrderTitle');
+    if (title) title.textContent = 'Tambah PreOrder Baru';
   }
 }
 
@@ -3504,7 +3751,31 @@ async function addPreOrder(event) {
 
   try {
     await saveToIndexedDB(STORE_NAMES.PREORDERS, preOrders);
-    showNotification('PreOrder berhasil ditambahkan!');
+    const isEditing = editingPreOrderIndex !== null;
+
+    if (isEditing) {
+      const originalPo = preOrders[editingPreOrderIndex];
+      preOrders[editingPreOrderIndex] = {
+        ...newPreOrder,
+        status: originalPo.status,
+        orderDate: originalPo.orderDate,
+        ...(originalPo.completionDate ? { completionDate: originalPo.completionDate } : {})
+      };
+      preOrders.pop(); // remove the pushed duplicate
+      editingPreOrderIndex = null;
+
+      const submitBtn = document.querySelector('#addPreOrderForm button[type="submit"]');
+      submitBtn.innerHTML = '💾 Simpan PreOrder';
+      const cancelBtn = document.getElementById('cancelEditPreOrderBtn');
+      if (cancelBtn) cancelBtn.remove();
+      const addTab = document.querySelector(".preorder-tab[onclick*=\"showPreOrderTab('addPreOrder')\"]")
+      if (addTab) addTab.innerHTML = '<i class="fas fa-plus"></i> Tambah PreOrder';
+      const title = document.getElementById('addPreOrderTitle');
+      if (title) title.textContent = 'Tambah PreOrder Baru';
+    }
+
+    await saveToIndexedDB(STORE_NAMES.PREORDERS, preOrders);
+    showNotification(isEditing ? 'PreOrder berhasil diperbarui!' : 'PreOrder berhasil ditambahkan!');
     form.reset();
 
     document.getElementById('poProductSelect').choices.clearStore();
@@ -3551,6 +3822,7 @@ function renderPreOrderList() {
       </div>
       <div class="preorder-actions">
         ${po.status === 'Pending' ? `<button class="btn-complete-po" onclick="completePreOrder(${index})"><i class="fas fa-check-circle"></i> Sudah Diambil</button>` : ''}
+        ${po.status === 'Pending' ? `<button class="btn-edit-po" onclick="editPreOrder(${index})"><i class="fas fa-edit"></i> Edit</button>` : ''}
         <button class="btn-delete-po" onclick="deletePreOrder(${index})"><i class="fas fa-trash"></i> Hapus</button>
       </div>
     `;
@@ -3632,6 +3904,80 @@ async function completePreOrder(index) {
             renderTopProducts();
         }
     }
+}
+
+function editPreOrder(index) {
+  const po = preOrders[index];
+  editingPreOrderIndex = index;
+
+  showPreOrderTab('addPreOrder');
+  document.querySelector(".preorder-tab[onclick*=\"showPreOrderTab('addPreOrder')\"]")
+    .innerHTML = `<i class="fas fa-edit"></i> Ubah PreOrder: ${po.customerName}`;
+  document.getElementById('addPreOrderTitle').textContent = `Ubah PreOrder: ${po.customerName}`;
+
+  document.getElementById('poCustomerName').value = po.customerName;
+  document.getElementById('poAddress').value = po.address || '';
+  document.getElementById('poContact').value = po.contact;
+
+  const paymentSelect = document.getElementById('poPaymentMethod');
+  paymentSelect.value = po.payment.method;
+  toggleTransferDetails();
+  document.getElementById('poTransferDetails').value = po.payment.details || '';
+
+  const deliveryRadio = document.querySelector(`input[name="deliveryMethod"][value="${po.deliveryMethod}"]`);
+  if (deliveryRadio) deliveryRadio.checked = true;
+
+  const selectElement = document.getElementById('poProductSelect');
+  if (selectElement.choices) {
+    selectElement.choices.setChoiceByValue(po.items.map(item => item.name));
+    updateSelectedProductsDisplay();
+    // Restore original quantities after display is rebuilt
+    po.items.forEach(item => {
+      const qtyInput = document.querySelector(`.po-product-qty[data-product-name="${item.name}"]`);
+      if (qtyInput) {
+        qtyInput.value = item.qty;
+      }
+    });
+    document.getElementById('poPrice').value = formatRupiah(po.totalPrice);
+  }
+
+  const submitBtn = document.querySelector('#addPreOrderForm button[type="submit"]');
+  submitBtn.innerHTML = '✏️ Simpan Perubahan PreOrder';
+
+  if (!document.getElementById('cancelEditPreOrderBtn')) {
+    const cancelBtn = document.createElement('button');
+    cancelBtn.type = 'button';
+    cancelBtn.id = 'cancelEditPreOrderBtn';
+    cancelBtn.className = 'btn-cancel-edit-preorder';
+    cancelBtn.innerHTML = '<i class="fas fa-times"></i> Batal Edit';
+    cancelBtn.onclick = cancelEditPreOrder;
+    submitBtn.insertAdjacentElement('afterend', cancelBtn);
+  }
+}
+
+function cancelEditPreOrder() {
+  editingPreOrderIndex = null;
+
+  const form = document.getElementById('addPreOrderForm');
+  form.reset();
+
+  const selectElement = document.getElementById('poProductSelect');
+  if (selectElement.choices) {
+    selectElement.choices.removeActiveItems();
+  }
+  document.getElementById('selectedPoProducts').innerHTML = '<p>Belum ada barang yang dipilih.</p>';
+  document.getElementById('poTransferDetails').style.display = 'none';
+
+  const submitBtn = document.querySelector('#addPreOrderForm button[type="submit"]');
+  submitBtn.innerHTML = '💾 Simpan PreOrder';
+
+  const cancelBtn = document.getElementById('cancelEditPreOrderBtn');
+  if (cancelBtn) cancelBtn.remove();
+
+  const addTab = document.querySelector(".preorder-tab[onclick*=\"showPreOrderTab('addPreOrder')\"]")
+  if (addTab) addTab.innerHTML = '<i class="fas fa-plus"></i> Tambah PreOrder';
+  const title = document.getElementById('addPreOrderTitle');
+  if (title) title.textContent = 'Tambah PreOrder Baru';
 }
 
 async function deletePreOrder(index) {

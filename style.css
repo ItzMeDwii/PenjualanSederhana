@@ -2641,6 +2641,31 @@ input:checked + .slider .emoji.moon {
   background-color: #c82333;
 }
 
+.preorder-actions .btn-edit-po {
+  background-color: #3498db;
+  color: white;
+}
+
+.preorder-actions .btn-edit-po:hover {
+  background-color: #217dbb;
+}
+
+.btn-cancel-edit-preorder {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.btn-cancel-edit-preorder:hover {
+  background-color: #545b62;
+}
+
 .choices {
   position: relative;
   margin-bottom: 10px;
@@ -4942,4 +4967,82 @@ form.add-form label:has(+ select[name="artist"]) {
   }
 }
 
+/* ===== TAGS SYSTEM ===== */
+
+.tag-filter-bar {
+  display: none;
+}
+
+.global-tag-filter-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: var(--total-header-height, 56px);
+  z-index: 998;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  padding: 8px 10px;
+  background: #f8f9fa;
+  border-bottom: 1px solid var(--border-color, #e0e0e0);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.global-tag-filter-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.tag-filter-btn {
+  background: #fff;
+  border: 1.5px solid #ccc;
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #555;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.tag-filter-btn:hover {
+  background: #e8f5e9;
+  border-color: #4CAF50;
+  color: #2e7d32;
+}
+
+.tag-filter-btn.active {
+  background: #4CAF50;
+  border-color: #4CAF50;
+  color: #fff;
+  font-weight: 600;
+}
+
+.product-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+  justify-content: center;
+}
+
+.product-tag {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #a5d6a7;
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Edit modal tag preview */
+.tag-preview-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  min-height: 0;
+  margin-top: 4px;
+}
 
