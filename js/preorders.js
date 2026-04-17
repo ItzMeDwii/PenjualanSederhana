@@ -303,12 +303,29 @@ function renderPreOrderList() {
   const preOrderListDiv = document.getElementById('preOrderList');
   preOrderListDiv.innerHTML = '';
 
+  const searchInput = document.getElementById('preOrderSearch');
+  const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+  const filtered = preOrders
+    .map((po, index) => ({ po, index }))
+    .filter(({ po }) => {
+      if (!query) return true;
+      if (po.customerName.toLowerCase().includes(query)) return true;
+      if (po.items.some(item => item.name.toLowerCase().includes(query))) return true;
+      return false;
+    });
+
   if (preOrders.length === 0) {
     preOrderListDiv.innerHTML = '<div class="empty-state">Belum ada data PreOrder.</div>';
     return;
   }
 
-  preOrders.forEach((po, index) => {
+  if (filtered.length === 0) {
+    preOrderListDiv.innerHTML = '<div class="empty-state">Tidak ada PreOrder yang cocok.</div>';
+    return;
+  }
+
+  filtered.forEach(({ po, index }) => {
     const poCard = document.createElement('div');
     poCard.className = `preorder-card ${po.status === 'Completed' ? 'completed' : ''}`;
     poCard.innerHTML = `

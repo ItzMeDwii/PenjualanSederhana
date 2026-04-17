@@ -511,6 +511,13 @@
 
         <div id="listPreOrderTab" class="preorder-tab-content">
           <h4>Daftar PreOrder</h4>
+          <input
+            type="search"
+            id="preOrderSearch"
+            placeholder="Cari nama pelanggan atau barang..."
+            oninput="renderPreOrderList()"
+            style="width:100%;padding:8px 10px;margin-bottom:10px;border:1px solid #ccc;border-radius:6px;font-size:14px;box-sizing:border-box"
+          />
           <div id="preOrderList"></div>
         </div>
       </div>
