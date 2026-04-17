@@ -1,4 +1,4 @@
-const CACHE_NAME = 'penjualan-v1';
+const CACHE_NAME = 'penjualan-20260417-1';
 
 const STATIC_ASSETS = [
   './',
@@ -10,6 +10,7 @@ const STATIC_ASSETS = [
   'https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js',
   'https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css',
   'https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css',
 ];
 
 // Install: cache all static assets

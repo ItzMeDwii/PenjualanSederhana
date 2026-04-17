@@ -326,7 +326,7 @@ async function loadFromDatabase() {
       navbar.innerHTML = '';
       const manageBtn = document.createElement('button');
       manageBtn.className = 'manage-category';
-      manageBtn.textContent = '➕ Jenis Barang';
+      manageBtn.innerHTML = '<i class="fas fa-plus"></i> Jenis Barang';
       manageBtn.onclick = showCategoryModal;
       navbar.appendChild(manageBtn);
     }
@@ -544,8 +544,8 @@ function renderProducts() {
               <button onclick="increaseQuantity('${category}', ${index})" ${isOutOfStock ? 'disabled' : ''}>+</button>
             </div>
             <div class="button-group">
-              <button class="action-btn btn-edit" onclick="editProduct('${category}', ${index}); event.stopPropagation();">✏️</button>
-              <button class="action-btn btn-delete" onclick="deleteProduct('${category}', ${index}); event.stopPropagation();">🗑️</button>
+              <button class="action-btn btn-edit" onclick="editProduct('${category}', ${index}); event.stopPropagation();"><i class="fas fa-pencil-alt"></i></button>
+              <button class="action-btn btn-delete" onclick="deleteProduct('${category}', ${index}); event.stopPropagation();"><i class="fas fa-trash"></i></button>
             </div>
           </div>
         `;
@@ -634,7 +634,7 @@ function updateNavbarCategories() {
 
   const manageBtn = document.createElement('button');
   manageBtn.className = 'manage-category';
-  manageBtn.textContent = '➕ Jenis Barang';
+  manageBtn.innerHTML = '<i class="fas fa-plus"></i> Jenis Barang';
   manageBtn.onclick = showCategoryModal;
   navbar.appendChild(manageBtn);
 
@@ -666,8 +666,8 @@ function updateNavbarCategories() {
           </select>
           <div class="image-input-container image-paste-area">
             <div class="image-source-buttons">
-              <button type="button" class="image-source-btn" onclick="openCamera('${category}')">📷 Kamera</button>
-              <button type="button" class="image-source-btn" onclick="openGallery('${category}')">🖼️ Galeri</button>
+              <button type="button" class="image-source-btn" onclick="openCamera('${category}')"><i class="fas fa-camera"></i> Kamera</button>
+              <button type="button" class="image-source-btn" onclick="openGallery('${category}')"><i class="fas fa-images"></i> Galeri</button>
             </div>
             <div class="paste-instruction">atau tempel gambar di sini</div>
             <input type="file" id="imageInput-${category}" name="imageFile" accept="image/*"
@@ -678,7 +678,7 @@ function updateNavbarCategories() {
           <input type="text" name="price" placeholder="Harga (Rp)" required oninput="formatRupiahInput(this)" inputmode="numeric" pattern="[0-9.]*" />
           <p>Stok</p>
           <input type="number" name="stock" placeholder="Stok Barang" required min="0" />
-          <button type="submit">➕ Tambah Barang</button>
+          <button type="submit"><i class="fas fa-plus"></i> Tambah Barang</button>
         </form>
       `;
       tabContainer.appendChild(tabContent);
@@ -788,8 +788,8 @@ function filterProducts(searchTerm) {
               <button onclick="increaseQuantity('${category}', ${originalIndex})" ${isOutOfStock ? 'disabled' : ''}>+</button>
             </div>
             <div class="button-group">
-              <button class="action-btn btn-edit" onclick="editProduct('${category}', ${originalIndex}); event.stopPropagation();">✏️</button>
-              <button class="action-btn btn-delete" onclick="deleteProduct('${category}', ${originalIndex}); event.stopPropagation();">🗑️</button>
+              <button class="action-btn btn-edit" onclick="editProduct('${category}', ${originalIndex}); event.stopPropagation();"><i class="fas fa-pencil-alt"></i></button>
+              <button class="action-btn btn-delete" onclick="deleteProduct('${category}', ${originalIndex}); event.stopPropagation();"><i class="fas fa-trash"></i></button>
             </div>
           </div>
         </div>
@@ -917,7 +917,7 @@ function renderCartModalContent() {
                         <button onclick="decreaseCartItem(${index})" class="cart-btn-minus">−</button>
                         <span class="cart-qty-display">${item.qty}</span>
                         <button onclick="increaseCartItem(${index})" class="cart-btn-plus">+</button>
-                        <button onclick="removeCartItem(${index})" class="cart-btn-delete">🗑️</button>
+                        <button onclick="removeCartItem(${index})" class="cart-btn-delete"><i class="fas fa-trash"></i></button>
                     </div>
                 </div>
             </div>
@@ -967,7 +967,7 @@ function renderCartModalContent() {
     if (!checkoutBtn) {
         checkoutBtn = document.createElement('button');
         checkoutBtn.className = 'btn-checkout-cart';
-        checkoutBtn.textContent = '✅ Checkout Sekarang';
+        checkoutBtn.innerHTML = '<i class="fas fa-check-circle"></i> Checkout Sekarang';
         checkoutBtn.onclick = showCheckoutConfirmationModal;
         cartModalFooter.appendChild(checkoutBtn);
     }
@@ -1167,7 +1167,7 @@ function showCheckoutModal(paymentTypeFromCart = null) {
   modalActions.innerHTML = `
     <button class="btn-cash" onclick="processCheckout('Cash')"> Cash</button>
     <button class="btn-transfer" onclick="processCheckout('Transfer')"> Transfer</button>
-    <button class="btn-cancel" onclick="closeCheckoutModal()">✖ Batal</button>
+    <button class="btn-cancel" onclick="closeCheckoutModal()"><i class="fas fa-times"></i> Batal</button>
   `;
 
   if (paymentTypeFromCart) {
@@ -1874,8 +1874,8 @@ function renderCategoryList() {
     item.innerHTML = `
       <span id="categoryName-${index}">${capitalizeFirstLetter(category)}</span>
       <div class="category-actions">
-        <button class="btn-edit-category" onclick="editCategoryName('${category}', ${index})">✏️ Edit</button>
-        <button class="btn-delete-category" onclick="deleteCategory('${category}', ${index})">🗑️ Hapus</button>
+        <button class="btn-edit-category" onclick="editCategoryName('${category}', ${index})"><i class="fas fa-pencil-alt"></i> Edit</button>
+        <button class="btn-delete-category" onclick="deleteCategory('${category}', ${index})"><i class="fas fa-trash"></i> Hapus</button>
       </div>
     `;
     categoryList.appendChild(item);
@@ -1896,8 +1896,8 @@ function editCategoryName(oldCategoryName, index) {
   `;
 
   categoryActionsDiv.innerHTML = `
-    <button class="btn-save-category" onclick="saveCategoryName('${oldCategoryName}', ${index})">💾 Simpan</button>
-    <button class="btn-cancel-edit" onclick="cancelEditCategoryName('${oldCategoryName}', ${index}, '${originalName}')">✖️ Batal</button>
+    <button class="btn-save-category" onclick="saveCategoryName('${oldCategoryName}', ${index})"><i class="fas fa-save"></i> Simpan</button>
+    <button class="btn-cancel-edit" onclick="cancelEditCategoryName('${oldCategoryName}', ${index}, '${originalName}')"><i class="fas fa-times"></i> Batal</button>
   `;
 
   document.getElementById(`editCategoryInput-${index}`).focus();
@@ -2014,8 +2014,8 @@ function cancelEditCategoryName(oldCategoryName, index, originalDisplayName) {
   categoryNameSpan.textContent = originalDisplayName;
 
   categoryActionsDiv.innerHTML = `
-    <button class="btn-edit-category" onclick="editCategoryName('${oldCategoryName}', ${index})">✏️ Edit</button>
-    <button class="btn-delete-category" onclick="deleteCategory('${oldCategoryName}', ${index})">🗑️ Hapus</button>
+    <button class="btn-edit-category" onclick="editCategoryName('${oldCategoryName}', ${index})"><i class="fas fa-pencil-alt"></i> Edit</button>
+    <button class="btn-delete-category" onclick="deleteCategory('${oldCategoryName}', ${index})"><i class="fas fa-trash"></i> Hapus</button>
   `;
 }
 
@@ -2073,7 +2073,7 @@ async function deleteCategory(category, index) {
         navbar.innerHTML = '';
         const manageBtn = document.createElement('button');
         manageBtn.className = 'manage-category';
-        manageBtn.textContent = '➕ Jenis Barang';
+        manageBtn.innerHTML = '<i class="fas fa-plus"></i> Jenis Barang';
         manageBtn.onclick = showCategoryModal;
         navbar.appendChild(manageBtn);
       }
@@ -2142,12 +2142,12 @@ function toggleSales() {
 
   if (salesDiv.style.display === 'block') {
     salesDiv.style.display = 'none';
-    salesBtn.textContent = '📊 Lihat Data Penjualan';
+    salesBtn.innerHTML = '<i class="fas fa-chart-bar"></i> Lihat Data Penjualan';
   } else {
     renderSalesTable();
     salesDiv.style.display = 'block';
     salesDiv.style.overflowY = 'auto';
-    salesBtn.textContent = '✖️ Tutup Data Penjualan';
+    salesBtn.innerHTML = '<i class="fas fa-times"></i> Tutup Data Penjualan';
   }
 }
 
@@ -2274,21 +2274,21 @@ function renderSalesTable() {
           <span class="after-promo-amount">Rp${formatRupiah(grandTotalAfterPromo)}</span>
         </div>
         <div class="summary-row total-rounded">
-          <span>💵 Total Setelah Pembulatan (pemasukan aktual):</span>
+          <span><i class="fas fa-money-bill-alt"></i> Total Setelah Pembulatan (pemasukan aktual):</span>
           <span class="rounded-amount">Rp${formatRupiah(grandTotalRounded)}</span>
         </div>
         <div class="summary-row rounding-saved">
-          <span>📝 Total Sisa Pembulatan:</span>
+          <span><i class="fas fa-file-alt"></i> Total Sisa Pembulatan:</span>
           <span class="rounding-saved-amount">Rp${formatRupiah(grandRoundingSaved)}</span>
         </div>
         <div class="summary-row total-discount">
-          <span>🏷️ Total Diskon (termasuk pembulatan):</span>
+          <span><i class="fas fa-tag"></i> Total Diskon (termasuk pembulatan):</span>
           <span class="discount-amount">Rp${formatRupiah(grandOriginalTotal - grandTotalRounded)}</span>
         </div>
       </div>
       
       <div class="summary-card">
-        <h4>💳 Metode Pembayaran</h4>
+        <h4><i class="fas fa-credit-card"></i> Metode Pembayaran</h4>
         <div class="summary-row cash">
           <span>Cash:</span>
           <span>Rp${formatRupiah(totalCash)}</span>
@@ -2308,10 +2308,10 @@ function renderSalesTable() {
   html += `
     <div class="sales-actions-bottom">
       <button id="downloadExcelBtn" onclick="downloadExcel()" class="btn-download">
-        ⬇️ Download Data Excel
+        <i class="fas fa-download"></i> Download Data Excel
       </button>
       <button id="deleteAllSalesBtn" onclick="deleteAllSalesRecords()" class="btn-delete-all">
-        🗑️ Hapus Semua Data
+        <i class="fas fa-trash"></i> Hapus Semua Data
       </button>
     </div>
   `;
@@ -3550,8 +3550,8 @@ function renderPreOrderList() {
         <p><strong>Pengambilan:</strong> ${po.deliveryMethod}</p>
       </div>
       <div class="preorder-actions">
-        ${po.status === 'Pending' ? `<button class="btn-complete-po" onclick="completePreOrder(${index})">✅ Sudah Diambil</button>` : ''}
-        <button class="btn-delete-po" onclick="deletePreOrder(${index})">🗑️ Hapus</button>
+        ${po.status === 'Pending' ? `<button class="btn-complete-po" onclick="completePreOrder(${index})"><i class="fas fa-check-circle"></i> Sudah Diambil</button>` : ''}
+        <button class="btn-delete-po" onclick="deletePreOrder(${index})"><i class="fas fa-trash"></i> Hapus</button>
       </div>
     `;
     preOrderListDiv.appendChild(poCard);
@@ -3671,8 +3671,8 @@ function renderPaymentMethodList() {
     item.innerHTML = `
       <span id="methodName-${index}">${method}</span>
       <div class="payment-method-actions">
-        <button class="btn-edit-method" onclick="editPaymentMethodName('${method}', ${index})">✏️ Edit</button>
-        <button class="btn-delete-method" onclick="deletePaymentMethod('${method}', ${index})">🗑️ Hapus</button>
+        <button class="btn-edit-method" onclick="editPaymentMethodName('${method}', ${index})"><i class="fas fa-pencil-alt"></i> Edit</button>
+        <button class="btn-delete-method" onclick="deletePaymentMethod('${method}', ${index})"><i class="fas fa-trash"></i> Hapus</button>
       </div>
     `;
     paymentMethodListDiv.appendChild(item);
@@ -3723,8 +3723,8 @@ function editPaymentMethodName(oldMethodName, index) {
   `;
 
   methodActionsDiv.innerHTML = `
-    <button class="btn-save-method" onclick="savePaymentMethodName('${oldMethodName}', ${index})">💾 Simpan</button>
-    <button class="btn-cancel-edit" onclick="cancelEditPaymentMethodName('${oldMethodName}', ${index}, '${originalName}')">✖️ Batal</button>
+    <button class="btn-save-method" onclick="savePaymentMethodName('${oldMethodName}', ${index})"><i class="fas fa-save"></i> Simpan</button>
+    <button class="btn-cancel-edit" onclick="cancelEditPaymentMethodName('${oldMethodName}', ${index}, '${originalName}')"><i class="fas fa-times"></i> Batal</button>
   `;
 
   document.getElementById(`editMethodInput-${index}`).focus();
@@ -3777,8 +3777,8 @@ function cancelEditPaymentMethodName(oldMethodName, index, originalDisplayName) 
   methodNameSpan.textContent = originalDisplayName;
 
   methodActionsDiv.innerHTML = `
-    <button class="btn-edit-method" onclick="editPaymentMethodName('${oldMethodName}', ${index})">✏️ Edit</button>
-    <button class="btn-delete-method" onclick="deletePaymentMethod('${oldMethodName}', ${index})">🗑️ Hapus</button>
+    <button class="btn-edit-method" onclick="editPaymentMethodName('${oldMethodName}', ${index})"><i class="fas fa-pencil-alt"></i> Edit</button>
+    <button class="btn-delete-method" onclick="deletePaymentMethod('${oldMethodName}', ${index})"><i class="fas fa-trash"></i> Hapus</button>
   `;
 }
 
@@ -3912,7 +3912,7 @@ function toggleFullscreen() {
 
   if (!document.fullscreenElement) {
     document.documentElement.requestFullscreen().then(() => {
-      fullscreenButton.textContent = '⛶';
+      fullscreenButton.innerHTML = '<i class="fas fa-compress"></i>';
       fullscreenButton.classList.add('fullscreen-active');
     }).catch(err => {
       console.error('Gagal masuk mode fullscreen:', err);
@@ -3920,7 +3920,7 @@ function toggleFullscreen() {
     });
   } else {
     document.exitFullscreen().then(() => {
-      fullscreenButton.textContent = '⛶';
+      fullscreenButton.innerHTML = '<i class="fas fa-expand"></i>';
       fullscreenButton.classList.remove('fullscreen-active');
     });
   }
@@ -4005,10 +4005,10 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('fullscreenchange', () => {
       const fullscreenButton = document.getElementById('fullscreenButton');
       if (document.fullscreenElement) {
-        fullscreenButton.textContent = '⛶';
+        fullscreenButton.innerHTML = '<i class="fas fa-compress"></i>';
         fullscreenButton.classList.add('fullscreen-active');
       } else {
-        fullscreenButton.textContent = '⛶';
+        fullscreenButton.innerHTML = '<i class="fas fa-expand"></i>';
         fullscreenButton.classList.remove('fullscreen-active');
       }
     });
@@ -4204,8 +4204,8 @@ function renderArtistList() {
     item.innerHTML = `
       <span id="artistName-${index}">${artist}</span>
       <div class="artist-actions">
-        <button class="btn-edit-artist" onclick="editArtistName('${artist}', ${index})">✏️ Edit</button>
-        <button class="btn-delete-artist" onclick="deleteArtist('${artist}', ${index})">🗑️ Hapus</button>
+        <button class="btn-edit-artist" onclick="editArtistName('${artist}', ${index})"><i class="fas fa-pencil-alt"></i> Edit</button>
+        <button class="btn-delete-artist" onclick="deleteArtist('${artist}', ${index})"><i class="fas fa-trash"></i> Hapus</button>
       </div>
     `;
     artistList.appendChild(item);
@@ -4261,8 +4261,8 @@ function editArtistName(oldArtistName, index) {
   `;
 
   artistActionsDiv.innerHTML = `
-    <button class="btn-save-artist" onclick="saveArtistName('${oldArtistName}', ${index})">💾 Simpan</button>
-    <button class="btn-cancel-edit" onclick="cancelEditArtistName('${oldArtistName}', ${index}, '${originalName}')">✖️ Batal</button>
+    <button class="btn-save-artist" onclick="saveArtistName('${oldArtistName}', ${index})"><i class="fas fa-save"></i> Simpan</button>
+    <button class="btn-cancel-edit" onclick="cancelEditArtistName('${oldArtistName}', ${index}, '${originalName}')"><i class="fas fa-times"></i> Batal</button>
   `;
 
   document.getElementById(`editArtistInput-${index}`).focus();
@@ -4345,8 +4345,8 @@ function cancelEditArtistName(oldArtistName, index, originalDisplayName) {
   artistNameSpan.textContent = originalDisplayName;
 
   artistActionsDiv.innerHTML = `
-    <button class="btn-edit-artist" onclick="editArtistName('${oldArtistName}', ${index})">✏️ Edit</button>
-    <button class="btn-delete-artist" onclick="deleteArtist('${oldArtistName}', ${index})">🗑️ Hapus</button>
+    <button class="btn-edit-artist" onclick="editArtistName('${oldArtistName}', ${index})"><i class="fas fa-pencil-alt"></i> Edit</button>
+    <button class="btn-delete-artist" onclick="deleteArtist('${oldArtistName}', ${index})"><i class="fas fa-trash"></i> Hapus</button>
   `;
 }
 
@@ -5321,7 +5321,7 @@ function renderPromoRulesList() {
           <span class="promo-qty">${subRule.qty} barang</span>
           <span class="promo-arrow">→</span>
           <span class="promo-price">Rp${formatRupiah(subRule.price)}</span>
-          <button class="btn-remove-subrule" onclick="removePromoSubRule(${ruleIndex}, ${subIndex})">✖</button>
+          <button class="btn-remove-subrule" onclick="removePromoSubRule(${ruleIndex}, ${subIndex})"><i class="fas fa-times"></i></button>
         </div>
       `;
     });
@@ -5329,7 +5329,7 @@ function renderPromoRulesList() {
     ruleCard.innerHTML = `
       <div class="promo-rule-header">
         <h4>Kategori: ${capitalizeFirstLetter(rule.category)}</h4>
-        <button class="btn-delete-rule" onclick="deletePromoRule(${ruleIndex})">🗑️ Hapus</button>
+        <button class="btn-delete-rule" onclick="deletePromoRule(${ruleIndex})"><i class="fas fa-trash"></i> Hapus</button>
       </div>
       <div class="promo-subrules-container">
         ${rulesHtml}
