@@ -1,476 +1,815 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="mobile-web-app-capable" content="yes">
-  <title>Form Penjualan Barang</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍉</text></svg>">
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#4CAF50">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
-  <link rel="stylesheet" href="style.css">
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js');
-      });
-    }
-  </script>
-  <style>
-
-    .paste-instruction {
-      text-align: center;
-      color: #888;
-      font-size: 13px;
-      margin-top: 8px;
-      border: 2px dashed #ddd;
-      padding: 15px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.2s, border-color 0.2s;
-    }
-    .paste-instruction:hover {
-      background-color: #f9f9f9;
-      border-color: #ccc;
-    }
-  </style>
-</head>
-<body>
-  <div class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <h3>Menu</h3>
-      <button onclick="closeSidebar()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">×</button>
-    </div>
-    <div class="sidebar-content">
-      <ul class="sidebar-menu">
-        <li><a href="#" onclick="closeSidebar()"><i class="fas fa-home"></i> Beranda</a></li>
-        <li>
-          <a href="#" onclick="toggleBackupMenu(event)"><i class="fas fa-save"></i> Backup & Restore <i class="fas fa-chevron-down"></i></a>
-          <ul class="submenu" id="backupSubmenu" style="display: none;">
-            <li><a href="#" onclick="exportData()"><i class="fas fa-file-export"></i> Export Data</a></li>
-            <li><a href="#" onclick="showImportDialog()"><i class="fas fa-file-import"></i> Import Data</a></li>
-            <li><a href="#" onclick="resetAllData()"><i class="fas fa-sync-alt"></i> Reset Semua Data</a></li>
-          </ul>
-        </li>
-        <li><a href="#" onclick="showDashboard(); closeSidebar()"><i class="fas fa-chart-bar"></i> Dashboard</a></li>
-          
-        <li><a href="#" onclick="showPreOrder(); closeSidebar()"><i class="fas fa-box"></i> PreOrder</a></li>
-        <li><a href="#" onclick="showHelp(); closeSidebar()"><i class="fas fa-info-circle"></i> Info</a></li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
-
-  <div class="storage-warning" id="storageWarning"></div>
-
-  <div class="menu-bar">
-    <button class="menu-button" id="menuButton" onclick="toggleSidebar()">☰</button>
-    
-    <div class="search-container">
-      <span class="search-icon"><i class="fas fa-search"></i></span>
-      <input type="text" id="searchInput" placeholder="Cari barang...">
-      <button id="clearSearchButton" style="display: none; background: none; border: none; color: #ccc; font-size: 18px; cursor: pointer; margin-left: -30px; z-index: 1;"><i class="fas fa-times"></i></button>
-    </div>
-    
-    <div class="menu-controls">
-      <button onclick="openArtistModal(); closeSidebar()" class="control-button"><i class="fas fa-user"></i></button>
-      <button onclick="openPromoRulesModal(); closeSidebar()" class="control-button"><i class="fas fa-tag"></i></button>
-      <button id="fullscreenButton" class="control-button"><i class="fas fa-expand"></i></button>
-      <button id="refreshButton" class="control-button"><i class="fas fa-redo"></i></button>
-    </div>
-  </div>
-
-  <div class="navbar main-navbar" id="mainNavbar">
-    <button class="manage-category" onclick="showCategoryModal()"><i class="fas fa-plus"></i> Jenis Barang</button>
-  </div>
-  <div id="globalTagFilterBar" class="global-tag-filter-bar" style="display:none;"></div>
-
-<div class="cart-sidebar-overlay" id="cartSidebarOverlay" onclick="closeCartSidebar()"></div>
-
-<div id="cartModal" class="cart-modal">
-  <div class="cart-modal-header">
-    <h3>Keranjang Belanja</h3>
-    <button class="close-modal" onclick="closeCartModal()"><i class="fas fa-times"></i></button> 
-  </div>
-  <div class="cart-modal-content" id="cartModalContent">
-    </div>
-  <div class="cart-modal-footer">
-    <div class="cart-total"><span id="cartTotal">0</span></div>
-    </div>
-</div>
-
-  <div id="dynamic-tabs">
-  </div>
-
-<div id="editModal" class="modal-overlay" style="display: none;">
-  <div class="modal-content" onclick="event.stopPropagation()">
-    <button class="close-modal" onclick="closeEditModal()"><i class="fas fa-times"></i></button>
-    <h3>Edit Barang</h3> 
-    <div class="modal-scrollable-content">
-      <form class="edit-form" onsubmit="saveEditedProduct(event)">
-        <input type="hidden" name="category" id="editCategory">
-        <input type="hidden" name="index" id="editIndex">
-      
-        <input type="hidden" name="name" id="editName">
-
-        <label>Kode Barang</label>
-        <input type="text" name="code" id="editCode" required>
-        
-        <label>Artist</label>
-        <select name="artist" id="artistSelect-edit">
-          <option value="">Tanpa Artist</option>
-        </select>
-        
-        <label>Gambar Barang</label>
-        <div class="image-input-container image-paste-area">
-          <div class="image-source-buttons">
-            <button type="button" class="image-source-btn" onclick="openCamera('edit')"><i class="fas fa-camera"></i> Kamera</button>
-            <button type="button" class="image-source-btn" onclick="openGallery('edit')"><i class="fas fa-images"></i> Galeri</button>
-          </div>
-          <div class="paste-instruction">atau tempel gambar di sini</div>
-          <input type="file" id="editImageFile" name="imageFile" accept="image/*" style="display: none" onchange="previewImage(event, 'edit')">
-          <img class="preview" id="editPreview" style="display: none"/>
-        </div>
-        
-        <label>Harga</label>
-        <input type="text" name="price" id="editPrice" required oninput="formatRupiahInput(this)" inputmode="numeric">
-
-        <label>Stok</label>
-        <input type="number" name="stock" id="editStock" required min="0">
-
-        <label>Tags <span style="font-weight:normal;font-size:12px;color:#888;">(pisahkan dengan koma, contoh: standard, mini, A5)</span></label>
-        <input type="text" name="tags" id="editTags" placeholder="Contoh: standard, mini, A5" autocomplete="off">
-        <div class="tag-preview-container" id="editTagPreview"></div>
-        
-        <button type="submit"><i class="fas fa-save"></i> Simpan Perubahan</button>
-      </form>
-    </div>
-  </div>
-</div>
-
-
-  <div id="categoryModal" class="modal">
-    <div class="modal-content" onclick="event.stopPropagation()">
-      <button class="close-modal" onclick="closeCategoryModal()"><i class="fas fa-times"></i></button>
-      <h3>Kelola Jenis Barang</h3>
-      <form onsubmit="addNewCategory(event)">
-        <input type="text" id="newCategoryName" placeholder="Nama Jenis Barang Baru" required />
-        <button type="submit">
-          <span class="icon">+</span> Tambah Jenis Barang
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <title>Form Penjualan Barang</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍉</text></svg>"
+    />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#4CAF50" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("./sw.js");
+        });
+      }
+    </script>
+    <style>
+      .paste-instruction {
+        text-align: center;
+        color: #888;
+        font-size: 13px;
+        margin-top: 8px;
+        border: 2px dashed #ddd;
+        padding: 15px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition:
+          background-color 0.2s,
+          border-color 0.2s;
+      }
+      .paste-instruction:hover {
+        background-color: #f9f9f9;
+        border-color: #ccc;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h3>Menu</h3>
+        <button
+          onclick="closeSidebar()"
+          style="
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+          "
+        >
+          ×
         </button>
-      </form>
-      <div class="category-list" id="categoryList"></div>
-    </div>
-  </div>
-
-<div id="dashboardModal" class="modal-overlay" style="display: none;">
-  <div class="modal-content" onclick="event.stopPropagation()">
-    <button class="close-modal" onclick="closeDashboard()"><i class="fas fa-times"></i></button>
-    <h3>Dashboard Penjualan</h3>
-    <div class="dashboard-tabs">
-      <button class="dashboard-tab active" onclick="showDashboardTab('salesReport')">Laporan Penjualan</button>
-      <button class="dashboard-tab" onclick="showDashboardTab('topProducts')">Produk Terlaris</button>
-      <button class="dashboard-tab" onclick="showDashboardTab('artistSales')">Penjualan per Artist</button>
-    </div>
-    
-
-    <div id="salesReportTab" class="dashboard-tab-content active">
-      <div class="date-filter-container">
-        <label for="startDate">Dari Tanggal:</label>
-        <input type="date" id="startDate">
-        <label for="endDate">Sampai Tanggal:</label>
-        <input type="date" id="endDate">
-        <button onclick="filterSalesByDate()">Filter</button>
-        <button onclick="resetSalesDateFilter()">Reset</button>
       </div>
-      <div id="salesData"></div>
-    </div>
-    
+      <div class="sidebar-content">
+        <ul class="sidebar-menu">
+          <li>
+            <a href="#" onclick="closeSidebar()"
+              ><i class="fas fa-home"></i> Beranda</a
+            >
+          </li>
+          <li>
+            <a href="#" onclick="toggleBackupMenu(event)"
+              ><i class="fas fa-save"></i> Backup & Restore
+              <i class="fas fa-chevron-down"></i
+            ></a>
+            <ul class="submenu" id="backupSubmenu" style="display: none">
+              <li>
+                <a href="#" onclick="exportData()"
+                  ><i class="fas fa-file-export"></i> Export Data</a
+                >
+              </li>
+              <li>
+                <a href="#" onclick="showImportDialog()"
+                  ><i class="fas fa-file-import"></i> Import Data</a
+                >
+              </li>
+              <li>
+                <a href="#" onclick="resetAllData()"
+                  ><i class="fas fa-sync-alt"></i> Reset Semua Data</a
+                >
+              </li>
+            </ul>
+          </li>
+          <li>
+            <a
+              href="#"
+              onclick="
+                showDashboard();
+                closeSidebar();
+              "
+              ><i class="fas fa-chart-bar"></i> Dashboard</a
+            >
+          </li>
 
-    <div id="topProductsTab" class="dashboard-tab-content">
-      <h4>Produk Terlaris</h4>
-      <div class="top-products-list" id="topProductsList"></div>
-    </div>
-    
-
-    <div id="artistSalesTab" class="dashboard-tab-content">
-      <h4>Penjualan per Artist</h4>
-      
-      <div class="artist-filter-container">
-        <label for="artistSalesFilter">Filter Artist:</label>
-        <select id="artistSalesFilter" onchange="filterSalesByArtist()">
-          <option value="">Semua Artist</option>
-          <option value="Tanpa Artist">Tanpa Artist</option>
-        </select>
-        
-
+          <li>
+            <a
+              href="#"
+              onclick="
+                showPreOrder();
+                closeSidebar();
+              "
+              ><i class="fas fa-box"></i> PreOrder</a
+            >
+          </li>
+          <li>
+            <a
+              href="#"
+              onclick="
+                showHelp();
+                closeSidebar();
+              "
+              ><i class="fas fa-info-circle"></i> Info</a
+            >
+          </li>
+        </ul>
       </div>
-      
-      <div id="artistSalesData"></div>
     </div>
-    
-  </div>
-</div>
 
+    <div
+      class="sidebar-overlay"
+      id="sidebarOverlay"
+      onclick="closeSidebar()"
+    ></div>
 
+    <div class="storage-warning" id="storageWarning"></div>
 
-  <div id="preOrderModal" class="modal-overlay" style="display: none;">
-    <div class="modal-content" onclick="event.stopPropagation()">
-      <button class="close-modal" onclick="closePreOrderModal()"><i class="fas fa-times"></i></button>
-      <h3>Data PreOrder</h3>
-      <div class="preorder-tabs">
-        <button class="preorder-tab active" onclick="showPreOrderTab('addPreOrder')"><i class="fas fa-plus"></i> Tambah PreOrder</button>
-        <button class="preorder-tab" onclick="showPreOrderTab('listPreOrder')"><i class="fas fa-list"></i> Daftar PreOrder</button>
+    <div class="menu-bar">
+      <button class="menu-button" id="menuButton" onclick="toggleSidebar()">
+        ☰
+      </button>
+
+      <div class="search-container">
+        <span class="search-icon"><i class="fas fa-search"></i></span>
+        <input type="text" id="searchInput" placeholder="Cari barang..." />
+        <button
+          id="clearSearchButton"
+          style="
+            display: none;
+            background: none;
+            border: none;
+            color: #ccc;
+            font-size: 18px;
+            cursor: pointer;
+            margin-left: -30px;
+            z-index: 1;
+          "
+        >
+          <i class="fas fa-times"></i>
+        </button>
       </div>
 
-      <div id="addPreOrderTab" class="preorder-tab-content active">
-        <h4 id="addPreOrderTitle">Tambah PreOrder Baru</h4>
-        <form id="addPreOrderForm" onsubmit="addPreOrder(event)">
-          <label for="poCustomerName">Nama Pelanggan</label>
-          <input type="text" id="poCustomerName" required>
+      <div class="menu-controls">
+        <button
+          onclick="
+            openArtistModal();
+            closeSidebar();
+          "
+          class="control-button"
+        >
+          <i class="fas fa-user"></i>
+        </button>
+        <button
+          onclick="
+            openPromoRulesModal();
+            closeSidebar();
+          "
+          class="control-button"
+        >
+          <i class="fas fa-tag"></i>
+        </button>
+        <button id="fullscreenButton" class="control-button">
+          <i class="fas fa-expand"></i>
+        </button>
+        <button id="refreshButton" class="control-button">
+          <i class="fas fa-redo"></i>
+        </button>
+      </div>
+    </div>
 
-          <label for="poProductSelect">Pilih Barang PO</label>
-          <select id="poProductSelect" multiple required></select>
-          <div id="selectedPoProducts" class="selected-products-display"></div>
+    <div class="navbar main-navbar" id="mainNavbar">
+      <button class="manage-category" onclick="showCategoryModal()">
+        <i class="fas fa-plus"></i> Jenis Barang
+      </button>
+    </div>
+    <div
+      id="globalTagFilterBar"
+      class="global-tag-filter-bar"
+      style="display: none"
+    ></div>
 
-          <label for="poPaymentMethod">Metode Pembayaran</label>
-          <select id="poPaymentMethod" onchange="toggleTransferDetails()">
-            <option value="Cash">Cash</option>
-            <option value="Transfer">Transfer</option>
-          </select>
-          <input type="text" id="poTransferDetails" placeholder="Detail Transfer (Bank, No. Rek, dll)" style="display: none;">
+    <div
+      class="cart-sidebar-overlay"
+      id="cartSidebarOverlay"
+      onclick="closeCartSidebar()"
+    ></div>
 
-          <label for="poPrice">Total Harga</label>
-          <input type="text" id="poPrice" oninput="formatRupiahInput(this)" required>
+    <div id="cartModal" class="cart-modal">
+      <div class="cart-modal-header">
+        <h3>Keranjang Belanja</h3>
+        <button class="close-modal" onclick="closeCartModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="cart-modal-content" id="cartModalContent"></div>
+      <div class="cart-modal-footer">
+        <div class="cart-total"><span id="cartTotal">0</span></div>
+      </div>
+    </div>
 
-          <label for="poAddress">Alamat (Opsional)</label>
-          <textarea id="poAddress" rows="3"></textarea>
+    <div id="dynamic-tabs"></div>
 
-          <label for="poContact">Nomor/Akun yang bisa dihubungi</label>
-          <input type="text" id="poContact" required>
+    <div id="editModal" class="modal-overlay" style="display: none">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <button class="close-modal" onclick="closeEditModal()">
+          <i class="fas fa-times"></i>
+        </button>
+        <h3>Edit Barang</h3>
+        <div class="modal-scrollable-content">
+          <form class="edit-form" onsubmit="saveEditedProduct(event)">
+            <input type="hidden" name="category" id="editCategory" />
+            <input type="hidden" name="index" id="editIndex" />
 
-          <label>Metode Pengambilan</label>
-          <div class="delivery-method-options">
-            <input type="radio" id="poPickup" name="deliveryMethod" value="Diambil di Tempat" checked>
-            <label for="poPickup">Diambil di Tempat</label>
-            <input type="radio" id="poDelivery" name="deliveryMethod" value="Dikirim">
-            <label for="poDelivery">Dikirim</label>
+            <input type="hidden" name="name" id="editName" />
+
+            <label>Kode Barang</label>
+            <input type="text" name="code" id="editCode" required />
+
+            <label>Artist</label>
+            <select name="artist" id="artistSelect-edit">
+              <option value="">Tanpa Artist</option>
+            </select>
+
+            <label>Gambar Barang</label>
+            <div class="image-input-container image-paste-area">
+              <div class="image-source-buttons">
+                <button
+                  type="button"
+                  class="image-source-btn"
+                  onclick="openCamera('edit')"
+                >
+                  <i class="fas fa-camera"></i> Kamera
+                </button>
+                <button
+                  type="button"
+                  class="image-source-btn"
+                  onclick="openGallery('edit')"
+                >
+                  <i class="fas fa-images"></i> Galeri
+                </button>
+              </div>
+              <div class="paste-instruction">atau tempel gambar di sini</div>
+              <input
+                type="file"
+                id="editImageFile"
+                name="imageFile"
+                accept="image/*"
+                style="display: none"
+                onchange="previewImage(event, 'edit')"
+              />
+              <img class="preview" id="editPreview" style="display: none" />
+            </div>
+
+            <label>Harga</label>
+            <input
+              type="text"
+              name="price"
+              id="editPrice"
+              required
+              oninput="formatRupiahInput(this)"
+              inputmode="numeric"
+            />
+
+            <label>Stok</label>
+            <input type="number" name="stock" id="editStock" required min="0" />
+
+            <label
+              >Tags
+              <span style="font-weight: normal; font-size: 12px; color: #888"
+                >(pisahkan dengan koma, contoh: standard, mini, A5)</span
+              ></label
+            >
+            <input
+              type="text"
+              name="tags"
+              id="editTags"
+              placeholder="Contoh: standard, mini, A5"
+              autocomplete="off"
+            />
+            <div class="tag-preview-container" id="editTagPreview"></div>
+
+            <button type="submit">
+              <i class="fas fa-save"></i> Simpan Perubahan
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div id="categoryModal" class="modal">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <button class="close-modal" onclick="closeCategoryModal()">
+          <i class="fas fa-times"></i>
+        </button>
+        <h3>Kelola Jenis Barang</h3>
+        <form onsubmit="addNewCategory(event)">
+          <input
+            type="text"
+            id="newCategoryName"
+            placeholder="Nama Jenis Barang Baru"
+            required
+          />
+          <button type="submit">
+            <span class="icon">+</span> Tambah Jenis Barang
+          </button>
+        </form>
+        <div class="category-list" id="categoryList"></div>
+      </div>
+    </div>
+
+    <div id="dashboardModal" class="modal-overlay" style="display: none">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <button class="close-modal" onclick="closeDashboard()">
+          <i class="fas fa-times"></i>
+        </button>
+        <h3>Dashboard Penjualan</h3>
+        <div class="dashboard-tabs">
+          <button
+            class="dashboard-tab active"
+            onclick="showDashboardTab('salesReport')"
+          >
+            Laporan Penjualan
+          </button>
+          <button
+            class="dashboard-tab"
+            onclick="showDashboardTab('topProducts')"
+          >
+            Produk Terlaris
+          </button>
+          <button
+            class="dashboard-tab"
+            onclick="showDashboardTab('artistSales')"
+          >
+            Penjualan per Artist
+          </button>
+        </div>
+
+        <div id="salesReportTab" class="dashboard-tab-content active">
+          <div class="date-filter-container">
+            <label for="startDate">Dari Tanggal:</label>
+            <input type="date" id="startDate" />
+            <label for="endDate">Sampai Tanggal:</label>
+            <input type="date" id="endDate" />
+            <button onclick="filterSalesByDate()">Filter</button>
+            <button onclick="resetSalesDateFilter()">Reset</button>
+          </div>
+          <div id="salesData"></div>
+        </div>
+
+        <div id="topProductsTab" class="dashboard-tab-content">
+          <h4>Produk Terlaris</h4>
+          <div class="top-products-list" id="topProductsList"></div>
+        </div>
+
+        <div id="artistSalesTab" class="dashboard-tab-content">
+          <h4>Penjualan per Artist</h4>
+
+          <div class="artist-filter-container">
+            <label for="artistSalesFilter">Filter Artist:</label>
+            <select id="artistSalesFilter" onchange="filterSalesByArtist()">
+              <option value="">Semua Artist</option>
+              <option value="Tanpa Artist">Tanpa Artist</option>
+            </select>
           </div>
 
-          <button type="submit" onclick="event.stopPropagation()">💾 Simpan PreOrder</button>
-        </form>
-      </div>
-
-      <div id="listPreOrderTab" class="preorder-tab-content">
-        <h4>Daftar PreOrder</h4>
-        <div id="preOrderList"></div>
+          <div id="artistSalesData"></div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <input type="file" id="importFile" style="display: none;" onchange="importData(event)">
+    <div id="preOrderModal" class="modal-overlay" style="display: none">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <button class="close-modal" onclick="closePreOrderModal()">
+          <i class="fas fa-times"></i>
+        </button>
+        <h3>Data PreOrder</h3>
+        <div class="preorder-tabs">
+          <button
+            class="preorder-tab active"
+            onclick="showPreOrderTab('addPreOrder')"
+          >
+            <i class="fas fa-plus"></i> Tambah PreOrder
+          </button>
+          <button
+            class="preorder-tab"
+            onclick="showPreOrderTab('listPreOrder')"
+          >
+            <i class="fas fa-list"></i> Daftar PreOrder
+          </button>
+        </div>
 
-  <button id="cartButton">
-    <i class="fas fa-shopping-cart"></i>
-    <span class="badge" id="cartBadge">0</span>
-  </button>
+        <div id="addPreOrderTab" class="preorder-tab-content active">
+          <h4 id="addPreOrderTitle">Tambah PreOrder Baru</h4>
+          <form id="addPreOrderForm" onsubmit="addPreOrder(event)">
+            <label for="poCustomerName">Nama Pelanggan</label>
+            <input type="text" id="poCustomerName" required />
 
-  <div id="notification" class="notification" style="display: none;"></div>
+            <label for="poProductSelect">Pilih Barang PO</label>
+            <select id="poProductSelect" multiple required></select>
+            <div
+              id="selectedPoProducts"
+              class="selected-products-display"
+            ></div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+            <label for="poPaymentMethod">Metode Pembayaran</label>
+            <select id="poPaymentMethod" onchange="toggleTransferDetails()">
+              <option value="Cash">Cash</option>
+              <option value="Transfer">Transfer</option>
+            </select>
+            <input
+              type="text"
+              id="poTransferDetails"
+              placeholder="Detail Transfer (Bank, No. Rek, dll)"
+              style="display: none"
+            />
 
-  
-  <div id="welcomeModal" class="modal">
-    <div class="modal-content" onclick="event.stopPropagation()">
-      <h3>Terima kasih telah mencoba aplikasi penjualan Caca!</h3>
-      <div class="welcome-message">
-        <p>Aplikasi sudah bisa anda jalankan dengan normal</p>
-        <p>Jika ada masukan dan menemuikan permasalahan</p>
-        <p>silahkan masuk kesini~</p>
-          
+            <label for="poPrice">Total Harga</label>
+            <input
+              type="text"
+              id="poPrice"
+              oninput="formatRupiahInput(this)"
+              required
+            />
+
+            <label for="poAddress">Alamat (Opsional)</label>
+            <textarea id="poAddress" rows="3"></textarea>
+
+            <label for="poContact">Nomor/Akun yang bisa dihubungi</label>
+            <input type="text" id="poContact" required />
+
+            <label>Metode Pengambilan</label>
+            <div class="delivery-method-options">
+              <input
+                type="radio"
+                id="poPickup"
+                name="deliveryMethod"
+                value="Diambil di Tempat"
+                checked
+              />
+              <label for="poPickup">Diambil di Tempat</label>
+              <input
+                type="radio"
+                id="poDelivery"
+                name="deliveryMethod"
+                value="Dikirim"
+              />
+              <label for="poDelivery">Dikirim</label>
+            </div>
+
+            <button type="submit" onclick="event.stopPropagation()">
+              💾 Simpan PreOrder
+            </button>
+          </form>
+        </div>
+
+        <div id="listPreOrderTab" class="preorder-tab-content">
+          <h4>Daftar PreOrder</h4>
+          <div id="preOrderList"></div>
+        </div>
+      </div>
+    </div>
+
+    <input
+      type="file"
+      id="importFile"
+      style="display: none"
+      onchange="importData(event)"
+    />
+
+    <button id="cartButton">
+      <i class="fas fa-shopping-cart"></i>
+      <span class="badge" id="cartBadge">0</span>
+    </button>
+
+    <div id="notification" class="notification" style="display: none"></div>
+
+    <div id="welcomeModal" class="modal">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <h3>Terima kasih telah mencoba aplikasi penjualan Caca!</h3>
+        <div class="welcome-message">
+          <p>Aplikasi sudah bisa anda jalankan dengan normal</p>
+          <p>Jika ada masukan dan menemuikan permasalahan</p>
+          <p>silahkan masuk kesini~</p>
+
           <div class="welcome-buttons-container">
-        <div class="welcome-buttons-left">
-          <button class="btn-form-all"> 
-            <a href="https://forms.gle/ds821SSuEtHaniqi6">Beri masukan</a>
-          </button>
+            <div class="welcome-buttons-left">
+              <button class="btn-form-all">
+                <a href="https://forms.gle/ds821SSuEtHaniqi6">Beri masukan</a>
+              </button>
+            </div>
+            <div class="welcome-buttons-right">
+              <p class="support-text">Jangan lupa support devnya hehe ~</p>
+              <button class="btn-donate">
+                <a href="https://trakteer.id/cacacafe">
+                  <i class="fas fa-coffee"></i> Trakteer
+                </a>
+              </button>
+            </div>
+          </div>
         </div>
-        <div class="welcome-buttons-right">
-          <p class="support-text">Jangan lupa support devnya hehe ~</p>
-          <button class="btn-donate"> 
-            <a href="https://trakteer.id/cacacafe"> 
-              <i class="fas fa-coffee"></i> Trakteer
-            </a>
-          </button>
-        </div>
+        <button onclick="closeWelcomeModal()" class="welcome-close-btn">
+          Mengerti
+        </button>
       </div>
     </div>
-    <button onclick="closeWelcomeModal()" class="welcome-close-btn">Mengerti</button> 
-  </div>
-</div>
 
-  <div id="checkoutModal" class="modal-overlay" style="display: none;">
-    <div class="modal-content checkout-modal-content" onclick="event.stopPropagation()">
-      <button class="close-modal" onclick="closeCheckoutModal()"><i class="fas fa-times"></i></button>
-      <h3>Konfirmasi Checkout</h3>
-      <div id="checkoutSummary">
-         
-      </div>
-      <div class="discount-section">
+    <div id="checkoutModal" class="modal-overlay" style="display: none">
+      <div
+        class="modal-content checkout-modal-content"
+        onclick="event.stopPropagation()"
+      >
+        <button class="close-modal" onclick="closeCheckoutModal()">
+          <i class="fas fa-times"></i>
+        </button>
+        <h3>Konfirmasi Checkout</h3>
+        <div id="checkoutSummary"></div>
+        <div class="discount-section">
           <label for="discountInput">Diskon (%):</label>
-          <input type="number" id="discountInput" min="0" max="100" value="0" oninput="applyDiscount()">
+          <input
+            type="number"
+            id="discountInput"
+            min="0"
+            max="100"
+            value="0"
+            oninput="applyDiscount()"
+          />
+        </div>
+        <div class="modal-actions" id="paymentMethodActions"></div>
+        <button
+          type="button"
+          class="btn-manage-payment"
+          onclick="openPaymentMethodModal()"
+        >
+          Kelola Metode Pembayaran
+        </button>
       </div>
-      <div class="modal-actions" id="paymentMethodActions">
-      </div>
-      <button type="button" class="btn-manage-payment" onclick="openPaymentMethodModal()">Kelola Metode Pembayaran</button>
     </div>
-  </div>
 
-<div id="checkoutConfirmationModal" class="modal-overlay" style="display: none;">
-  <div class="modal-content" onclick="event.stopPropagation()">
-    <button class="close-modal" onclick="closeCheckoutConfirmationModal()"><i class="fas fa-times"></i></button>
-    <div id="checkoutConfirmationContent">
-      <div class="checkout-confirmation-header">
-        <h4>Pilih Metode Pembayaran</h4>
-        <p>Total Belanja: <strong>Rp<span id="checkoutGrandTotal">0</span></strong></p>
-      </div>
-      <div class="payment-method-options" id="mainPaymentMethodButtons">
-      </div>
-      <div id="dynamicTransferMethodContainer" style="display: none;">
-        <label for="transferMethodInput">Pilih Metode Transfer:</label>
-        <div class="payment-method-options" id="dynamicTransferMethodButtons">
+    <div
+      id="checkoutConfirmationModal"
+      class="modal-overlay"
+      style="display: none"
+    >
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <button class="close-modal" onclick="closeCheckoutConfirmationModal()">
+          <i class="fas fa-times"></i>
+        </button>
+        <div id="checkoutConfirmationContent">
+          <div class="checkout-confirmation-header">
+            <h4>Pilih Metode Pembayaran</h4>
+            <p>
+              Total Belanja:
+              <strong>Rp<span id="checkoutGrandTotal">0</span></strong>
+            </p>
+          </div>
+          <div
+            class="payment-method-options"
+            id="mainPaymentMethodButtons"
+          ></div>
+          <div id="dynamicTransferMethodContainer" style="display: none">
+            <label for="transferMethodInput">Pilih Metode Transfer:</label>
+            <div
+              class="payment-method-options"
+              id="dynamicTransferMethodButtons"
+            ></div>
+          </div>
+          <button
+            class="btn-confirm-payment"
+            id="confirmPaymentButton"
+            style="display: none"
+          >
+            Konfirmasi Pembayaran
+          </button>
+          <button
+            class="btn-cancel-confirmation"
+            onclick="closeCheckoutConfirmationModal()"
+          >
+            Batal
+          </button>
+          <button class="btn-manage-payment" onclick="openPaymentMethodModal()">
+            Kelola Metode Pembayaran
+          </button>
         </div>
       </div>
-      <button class="btn-confirm-payment" id="confirmPaymentButton" style="display:none;">Konfirmasi Pembayaran</button>
-      <button class="btn-cancel-confirmation" onclick="closeCheckoutConfirmationModal()">Batal</button>
-      <button class="btn-manage-payment" onclick="openPaymentMethodModal()">Kelola Metode Pembayaran</button>
     </div>
-  </div>
-</div>
 
-<div id="paymentMethodModal" class="modal-overlay" style="display: none;">
-  <div class="modal-content" onclick="event.stopPropagation()">
-    <button class="close-modal" onclick="closePaymentMethodModal()"><i class="fas fa-times"></i></button>
-    <h3>Kelola Metode Pembayaran</h3>
-    <form onsubmit="addNewPaymentMethod(event)">
-      <input type="text" id="newPaymentMethodName" placeholder="Nama Metode Pembayaran Baru" required />
-      <button type="submit">
-        <span class="icon">+</span> Tambah Metode
-      </button>
-    </form>
-    <div class="payment-method-list" id="paymentMethodList"></div>
-  </div>
-</div>
-
-<div id="artistModal" class="modal-overlay" style="display: none;">
-  <div class="modal-content" onclick="event.stopPropagation()">
-    <button class="close-modal" onclick="closeArtistModal()"><i class="fas fa-times"></i></button>
-    <h3>Kelola Artist</h3>
-    
-
-    <div style="margin-bottom: 15px;">
-      <button onclick="syncArtistsFromProducts()" class="btn-sync-artists" style="background: #3498db; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; margin-right: 10px;">
-        <i class="fas fa-sync-alt"></i> Sinkronkan dari Produk
-      </button>
-      <button onclick="syncArtistForExistingSales()" class="btn-sync-sales" style="background: #e67e22; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">
-        <i class="fas fa-chart-bar"></i> Sinkronkan Penjualan
-      </button>
-      <small style="display: block; color: #666; margin-top: 5px;">
-        Sinkronkan artist dari produk ke data penjualan yang sudah ada
-      </small>
-    </div>
-    
-    <form onsubmit="addNewArtist(event)">
-      <input type="text" id="newArtistName" placeholder="Nama Artist Baru" required />
-      <button type="submit" class="btn-add-artist">
-        <span class="icon">+</span> Tambah Artist
-      </button>
-    </form>
-    <div class="artist-list" id="artistList"></div>
-  </div>
-</div>
-
-<!-- PERBAIKAN: Struktur modal promo dengan header sticky -->
-<div id="promoRulesModal" class="modal-overlay" style="display: none;">
-  <div class="modal-content promo-modal-content" onclick="event.stopPropagation()">
-    <div class="promo-modal-header">
-      <button class="close-modal" onclick="closePromoRulesModal()"><i class="fas fa-times"></i></button>
-      <h3>Aturan Diskon Bundle</h3>
-    </div>
-    <div class="modal-scrollable-content">
-      <div class="promo-info">
-        <p>Contoh: 1 stiker = Rp5.000, 3 stiker = Rp10.000, 5 stiker = Rp15.000</p>
-        <p>Harga akan dibagi rata dan dibulatkan ke bawah (ribuan terdekat)</p>
+    <div id="paymentMethodModal" class="modal-overlay" style="display: none">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <button class="close-modal" onclick="closePaymentMethodModal()">
+          <i class="fas fa-times"></i>
+        </button>
+        <h3>Kelola Metode Pembayaran</h3>
+        <form onsubmit="addNewPaymentMethod(event)">
+          <input
+            type="text"
+            id="newPaymentMethodName"
+            placeholder="Nama Metode Pembayaran Baru"
+            required
+          />
+          <button type="submit">
+            <span class="icon">+</span> Tambah Metode
+          </button>
+        </form>
+        <div class="payment-method-list" id="paymentMethodList"></div>
       </div>
-      
-      <div class="promo-add-form">
-        <h4>Tambah Aturan Baru</h4>
-        <div class="promo-category-selection">
-          <label>Pilih Kategori:</label>
-          <div id="promoCategoryList" class="promo-category-list"></div>
+    </div>
+
+    <div id="artistModal" class="modal-overlay" style="display: none">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <button class="close-modal" onclick="closeArtistModal()">
+          <i class="fas fa-times"></i>
+        </button>
+        <h3>Kelola Artist</h3>
+
+        <div style="margin-bottom: 15px">
+          <button
+            onclick="syncArtistsFromProducts()"
+            class="btn-sync-artists"
+            style="
+              background: #3498db;
+              color: white;
+              border: none;
+              padding: 8px 12px;
+              border-radius: 4px;
+              cursor: pointer;
+              margin-right: 10px;
+            "
+          >
+            <i class="fas fa-sync-alt"></i> Sinkronkan dari Produk
+          </button>
+          <button
+            onclick="syncArtistForExistingSales()"
+            class="btn-sync-sales"
+            style="
+              background: #e67e22;
+              color: white;
+              border: none;
+              padding: 8px 12px;
+              border-radius: 4px;
+              cursor: pointer;
+            "
+          >
+            <i class="fas fa-chart-bar"></i> Sinkronkan Penjualan
+          </button>
+          <small style="display: block; color: #666; margin-top: 5px">
+            Sinkronkan artist dari produk ke data penjualan yang sudah ada
+          </small>
         </div>
-        <div class="promo-input-group">
-          <input type="number" id="newPromoQty" placeholder="Jumlah barang (contoh: 3)" min="1">
-          <input type="text" id="newPromoPrice" placeholder="Harga promo (contoh: 10000)" oninput="formatRupiahInput(this)">
-          <button onclick="addNewPromoRule()" class="btn-add-promo">+ Tambah</button>
+
+        <form onsubmit="addNewArtist(event)">
+          <input
+            type="text"
+            id="newArtistName"
+            placeholder="Nama Artist Baru"
+            required
+          />
+          <button type="submit" class="btn-add-artist">
+            <span class="icon">+</span> Tambah Artist
+          </button>
+        </form>
+        <div class="artist-list" id="artistList"></div>
+      </div>
+    </div>
+
+    <!-- PERBAIKAN: Struktur modal promo dengan header sticky -->
+    <div id="promoRulesModal" class="modal-overlay" style="display: none">
+      <div
+        class="modal-content promo-modal-content"
+        onclick="event.stopPropagation()"
+      >
+        <div class="promo-modal-header">
+          <button class="close-modal" onclick="closePromoRulesModal()">
+            <i class="fas fa-times"></i>
+          </button>
+          <h3>Aturan Diskon Bundle</h3>
+        </div>
+        <div class="modal-scrollable-content">
+          <div class="promo-info">
+            <p>
+              Contoh: 1 stiker = Rp5.000, 3 stiker = Rp10.000, 5 stiker =
+              Rp15.000
+            </p>
+            <p>
+              Harga akan dibagi rata dan dibulatkan ke bawah (ribuan terdekat)
+            </p>
+          </div>
+
+          <div class="promo-add-form">
+            <h4>Tambah Aturan Baru</h4>
+            <div class="promo-category-selection">
+              <label>Pilih Kategori:</label>
+              <div id="promoCategoryList" class="promo-category-list"></div>
+            </div>
+            <div class="promo-input-group">
+              <input
+                type="number"
+                id="newPromoQty"
+                placeholder="Jumlah barang (contoh: 3)"
+                min="1"
+              />
+              <input
+                type="text"
+                id="newPromoPrice"
+                placeholder="Harga promo (contoh: 10000)"
+                oninput="formatRupiahInput(this)"
+              />
+              <button onclick="addNewPromoRule()" class="btn-add-promo">
+                + Tambah
+              </button>
+            </div>
+          </div>
+
+          <div class="promo-rules-list" id="promoRulesList"></div>
         </div>
       </div>
-      
-      <div class="promo-rules-list" id="promoRulesList"></div>
     </div>
-  </div>
-</div>
 
-<div id="deleteModeOverlay" class="delete-mode-overlay"></div>
-<div id="deleteModeBar" class="delete-mode-bar" style="display: none;">
-  <span class="selected-count" id="selectedCount">0 produk dipilih</span>
-  <button class="btn-delete-selected" id="btnDeleteSelected"><i class="fas fa-trash"></i> Hapus</button>
-  <button class="btn-cancel-delete" id="btnCancelDeleteMode"><i class="fas fa-times"></i> Batal</button>
-</div>
+    <div id="deleteModeOverlay" class="delete-mode-overlay"></div>
+    <div id="deleteModeBar" class="delete-mode-bar" style="display: none">
+      <span class="selected-count" id="selectedCount">0 produk dipilih</span>
+      <button class="btn-delete-selected" id="btnDeleteSelected">
+        <i class="fas fa-trash"></i> Hapus
+      </button>
+      <button class="btn-cancel-delete" id="btnCancelDeleteMode">
+        <i class="fas fa-times"></i> Batal
+      </button>
+    </div>
 
-<!-- Modal Rename File untuk Export -->
-<div id="renameFileModal" class="modal-overlay" style="display: none;">
-    <div class="modal-content rename-modal-content" onclick="event.stopPropagation()">
-        <button class="close-modal" onclick="closeRenameFileModal()"><i class="fas fa-times"></i></button>
+    <!-- Modal Rename File untuk Export -->
+    <div id="renameFileModal" class="modal-overlay" style="display: none">
+      <div
+        class="modal-content rename-modal-content"
+        onclick="event.stopPropagation()"
+      >
+        <button class="close-modal" onclick="closeRenameFileModal()">
+          <i class="fas fa-times"></i>
+        </button>
         <h3>Simpan File Backup</h3>
         <div class="rename-file-input-group">
-            <label>Nama File:</label>
-            <input type="text" id="renameFileNameInput" placeholder="backup_penjualan" value="backup_penjualan">
-            <div class="file-extension">.json (akan ditambahkan otomatis)</div>
-            <div class="file-name-preview" id="fileNamePreview">
-                <strong>Preview:</strong> backup_penjualan.json
-            </div>
+          <label>Nama File:</label>
+          <input
+            type="text"
+            id="renameFileNameInput"
+            placeholder="backup_penjualan"
+            value="backup_penjualan"
+          />
+          <div class="file-extension">.json (akan ditambahkan otomatis)</div>
+          <div class="file-name-preview" id="fileNamePreview">
+            <strong>Preview:</strong> backup_penjualan.json
+          </div>
         </div>
         <div class="rename-modal-actions">
-            <button class="btn-rename-confirm" onclick="confirmExportWithRename()"><i class="fas fa-save"></i> Simpan</button>
-            <button class="btn-rename-cancel" onclick="closeRenameFileModal()"><i class="fas fa-times"></i> Batal</button>
+          <button
+            class="btn-rename-confirm"
+            onclick="confirmExportWithRename()"
+          >
+            <i class="fas fa-save"></i> Simpan
+          </button>
+          <button class="btn-rename-cancel" onclick="closeRenameFileModal()">
+            <i class="fas fa-times"></i> Batal
+          </button>
         </div>
+      </div>
     </div>
-</div>
 
-</body>
-<script src="js/state.js"></script>
-<script src="js/utils.js"></script>
-<script src="js/db.js"></script>
-<script src="js/tags.js"></script>
-<script src="js/promo.js"></script>
-<script src="js/image.js"></script>
-<script src="js/products.js"></script>
-<script src="js/cart.js"></script>
-<script src="js/checkout.js"></script>
-<script src="js/categories.js"></script>
-<script src="js/sales.js"></script>
-<script src="js/dashboard.js"></script>
-<script src="js/artists.js"></script>
-<script src="js/preorders.js"></script>
-<script src="js/payment-methods.js"></script>
-<script src="js/import-export.js"></script>
-<script src="js/delete-mode.js"></script>
-<script src="js/ui.js"></script>
-<script src="js/main.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/tags.js"></script>
+    <script src="js/promo.js"></script>
+    <script src="js/image.js"></script>
+    <script src="js/products.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/checkout.js"></script>
+    <script src="js/categories.js"></script>
+    <script src="js/sales.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/artists.js"></script>
+    <script src="js/preorders.js"></script>
+    <script src="js/payment-methods.js"></script>
+    <script src="js/import-export.js"></script>
+    <script src="js/delete-mode.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/main.js"></script>
+  </body>
 </html>

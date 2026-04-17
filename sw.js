@@ -1,4 +1,4 @@
-const CACHE_NAME = 'penjualan-20260417-3';
+const CACHE_NAME = 'penjualan-20260417-4';
 
 const STATIC_ASSETS = [
   './',
@@ -26,6 +26,7 @@ const STATIC_ASSETS = [
   './js/ui.js',
   './js/main.js',
   // CDN assets — cached on first load, served offline after
+  'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js',
   'https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css',
   'https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js',
