@@ -776,8 +776,6 @@ body {
 
 .filter-dropdown-panel {
   position: fixed;
-  top: 60px;
-  right: 10px;
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 6px 24px rgba(0,0,0,0.18);
@@ -1206,6 +1204,22 @@ img {
   cursor: pointer;
   transition: transform 0.2s;
 
+}
+
+.product-img.no-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  border-radius: 3px 3px 0 0;
+  color: #bbb;
+  font-size: 2rem;
+  cursor: pointer;
 }
 
 .product-info {
@@ -3506,6 +3520,30 @@ input:checked + .slider .emoji.moon {
   background-color: #117a8b;
 }
 
+
+#__all__-category {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--professional-border);
+  border-radius: 5px;
+  font-size: 15px;
+  background-color: white;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'><path fill='%23333' d='M2 0L0 2h4zm0 5L0 3h4z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px;
+  font-weight: 600;
+  color: var(--professional-dark);
+  cursor: pointer;
+}
+
+#__all__-category:focus {
+  border-color: var(--professional-primary);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  outline: none;
+}
 
 select[name="artist"] {
   width: 100%;

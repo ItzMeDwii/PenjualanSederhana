@@ -182,6 +182,17 @@
         </button>
       </div>
 
+      <div class="menu-controls">
+        <button id="fullscreenButton" class="control-button">
+          <i class="fas fa-expand"></i>
+        </button>
+        <button id="refreshButton" class="control-button">
+          <i class="fas fa-redo"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="navbar main-navbar" id="mainNavbar">
       <div class="filter-dropdown-wrapper">
         <button id="filterDropdownBtn" class="control-button" onclick="toggleFilterDropdown()" title="Filter">
           <i class="fas fa-sliders-h"></i>
@@ -198,38 +209,14 @@
           </div>
         </div>
       </div>
-
-      <div class="menu-controls">
-        <button
-          onclick="
-            openArtistModal();
-            closeSidebar();
-          "
-          class="control-button"
-        >
-          <i class="fas fa-user"></i>
-        </button>
-        <button
-          onclick="
-            openPromoRulesModal();
-            closeSidebar();
-          "
-          class="control-button"
-        >
-          <i class="fas fa-tag"></i>
-        </button>
-        <button id="fullscreenButton" class="control-button">
-          <i class="fas fa-expand"></i>
-        </button>
-        <button id="refreshButton" class="control-button">
-          <i class="fas fa-redo"></i>
-        </button>
-      </div>
-    </div>
-
-    <div class="navbar main-navbar" id="mainNavbar">
       <div id="navbarFiltersDisplay" class="navbar-filters-display"></div>
       <div class="navbar-actions">
+        <button class="manage-category" onclick="openArtistModal()">
+          <i class="fas fa-user"></i> Artist
+        </button>
+        <button class="manage-category" onclick="openPromoRulesModal()">
+          <i class="fas fa-tag"></i> Promo
+        </button>
         <button class="manage-category" onclick="showCategoryModal()">
           <i class="fas fa-plus"></i> Jenis Barang
         </button>

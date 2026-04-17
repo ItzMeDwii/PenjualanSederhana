@@ -5,9 +5,15 @@ function updateNavbarCategories() {
   const tabContainer = document.getElementById('dynamic-tabs');
   const categoryFilterBtns = document.getElementById('categoryFilterBtns');
 
+  // Save filter wrapper before wiping navbar
+  const filterWrapper = navbar.querySelector('.filter-dropdown-wrapper');
+
   navbar.innerHTML = '';
   tabContainer.innerHTML = '';
   if (categoryFilterBtns) categoryFilterBtns.innerHTML = '';
+
+  // Restore filter wrapper
+  if (filterWrapper) navbar.appendChild(filterWrapper);
 
   // Left: applied filters display
   const filtersDisplay = document.createElement('div');
@@ -22,9 +28,21 @@ function updateNavbarCategories() {
 
   const manageBtn = document.createElement('button');
   manageBtn.className = 'manage-category';
-  manageBtn.innerHTML = '<i class="fas fa-plus"></i> Jenis Barang';
-  manageBtn.onclick = showCategoryModal;
+  manageBtn.innerHTML = '<i class="fas fa-user"></i> Artist';
+  manageBtn.onclick = openArtistModal;
   actionsGroup.appendChild(manageBtn);
+
+  const promoBtn = document.createElement('button');
+  promoBtn.className = 'manage-category';
+  promoBtn.innerHTML = '<i class="fas fa-tag"></i> Promo';
+  promoBtn.onclick = openPromoRulesModal;
+  actionsGroup.appendChild(promoBtn);
+
+  const categoryBtn = document.createElement('button');
+  categoryBtn.className = 'manage-category';
+  categoryBtn.innerHTML = '<i class="fas fa-plus"></i> Jenis Barang';
+  categoryBtn.onclick = showCategoryModal;
+  actionsGroup.appendChild(categoryBtn);
 
   const bulkDeleteBtn = document.createElement('button');
   bulkDeleteBtn.className = 'navbar-bulk-btn navbar-bulk-delete-btn';
@@ -57,7 +75,49 @@ function updateNavbarCategories() {
       const allTab = document.createElement('div');
       allTab.id = '__all__';
       allTab.className = 'tab-content';
-      allTab.innerHTML = `<div class="product-list" id="__all__-list"></div>`;
+      const categoryOptions = categories.filter(c => c && typeof c === 'string')
+        .map(c => `<option value="${escapeHtml(c)}">${capitalizeFirstLetter(c)}</option>`).join('');
+      let artistOptions = '<option value="">Tanpa Artist</option>';
+      artists.forEach(artist => {
+        artistOptions += `<option value="${escapeHtml(artist)}">${escapeHtml(artist)}</option>`;
+      });
+      allTab.innerHTML = `
+        <div class="tag-filter-bar" id="__all__-tag-filter"></div>
+        <div class="product-list" id="__all__-list"></div>
+        <form class="add-form" onsubmit="addProduct(event, document.getElementById('__all__-category').value)">
+          <b>Tambah Barang</b>
+          <p>Kategori</p>
+          <select id="__all__-category" name="category" required>
+            ${categoryOptions}
+          </select>
+          <p>Kode Barang</p>
+          <input type="text" name="code" placeholder="Kode Barang" required />
+          <label>Artist</label>
+          <select name="artist">
+            ${artistOptions}
+          </select>
+          <div class="image-input-container image-paste-area">
+            <div class="image-source-buttons">
+              <button type="button" class="image-source-btn" onclick="openCamera('__all__')"><i class="fas fa-camera"></i> Kamera</button>
+              <button type="button" class="image-source-btn" onclick="openGallery('__all__')"><i class="fas fa-images"></i> Galeri</button>
+            </div>
+            <div class="paste-instruction">atau tempel gambar di sini</div>
+            <input type="file" id="imageInput-__all__" name="imageFile" accept="image/*"
+              onchange="previewImage(event, '__all__')" style="display: none">
+            <img id="imagePreview-__all__" class="preview" style="display: none"/>
+          </div>
+          <p>Harga</p>
+          <input type="text" name="price" placeholder="Harga (Rp)" required oninput="formatRupiahInput(this)" inputmode="numeric" pattern="[0-9.]*" />
+          <p>Stok</p>
+          <input type="number" name="stock" placeholder="Stok Barang" required min="0" />
+          <label>Tags <span style="font-weight:normal;font-size:12px;color:#888;">(pisahkan koma, contoh: standard, mini)</span></label>
+          <input type="text" name="tags" placeholder="Contoh: standard, mini, A5" autocomplete="off" />
+          <button type="submit"><i class="fas fa-plus"></i> Tambah Barang</button>
+          <button type="button" class="bulk-open-btn" onclick="openBulkAddModal(document.getElementById('__all__-category').value)">
+            <i class="fas fa-layer-group"></i> Tambah Massal
+          </button>
+        </form>
+      `;
       tabContainer.appendChild(allTab);
     }
   }
@@ -194,7 +254,7 @@ function filterProducts(searchTerm) {
           <div class="product-img-container" data-product-id="${productId}">
             ${cartQty > 0 ? `<div class="product-badge">${cartQty}</div>` : ''}
             ${product.code ? `<div class="product-code-badge">${product.code}</div>` : ''}
-            <img src="${product.image}" class="product-img" alt="${product.code}" loading="lazy">
+            ${product.image ? `<img src="${product.image}" class="product-img" alt="${product.code}" loading="lazy">` : `<div class="product-img no-image"><i class="fas fa-image"></i></div>`}
           </div>
           <div class="product-info">
             <div>
@@ -286,7 +346,7 @@ function renderAllProductsTab() {
     card.setAttribute('data-index', index);
     card.innerHTML = `
       <div class="product-img-container" data-product-id="${productId}">
-        <img src="${item.image}" class="product-img" alt="${item.name}" loading="lazy">
+        ${item.image ? `<img src="${item.image}" class="product-img" alt="${item.name}" loading="lazy">` : `<div class="product-img no-image"><i class="fas fa-image"></i></div>`}
       </div>
       <div class="product-info">
         <div>
@@ -371,7 +431,7 @@ function renderProducts() {
 
         card.innerHTML = `
           <div class="product-img-container" data-product-id="${productId}">
-            <img src="${item.image}" class="product-img" alt="${item.name}" loading="lazy">
+            ${item.image ? `<img src="${item.image}" class="product-img" alt="${item.name}" loading="lazy">` : `<div class="product-img no-image"><i class="fas fa-image"></i></div>`}
           </div>
           <div class="product-info">
             <div>
@@ -447,8 +507,14 @@ function editProduct(category, index) {
   document.getElementById('editPrice').value = formatRupiah(product.price);
   document.getElementById('editStock').value = product.stock;
   document.getElementById('editTags').value = (product.tags && product.tags.length > 0) ? product.tags.join(', ') : '';
-  document.getElementById('editPreview').src = product.image;
-  document.getElementById('editPreview').style.display = 'block';
+  const editPreview = document.getElementById('editPreview');
+  if (product.image) {
+    editPreview.src = product.image;
+    editPreview.style.display = 'block';
+  } else {
+    editPreview.src = '';
+    editPreview.style.display = 'none';
+  }
   document.getElementById('editImageFile').value = '';
 
   document.getElementById('editModal').style.display = 'flex';
@@ -577,13 +643,8 @@ async function addProduct(event, category) {
     showNotification("Stok harus diisi (tidak boleh negatif)!");
     return;
   }
-  if (!file) {
-    showNotification("Gambar produk wajib diupload atau ditempel!");
-    return;
-  }
-
   try {
-    const compressedImage = await compressImage(file);
+    const compressedImage = file ? await compressImage(file) : '';
 
     const newProduct = {
       name,

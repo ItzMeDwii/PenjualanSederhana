@@ -1,4 +1,4 @@
-const CACHE_NAME = 'penjualan-20260417-17';
+const CACHE_NAME = 'penjualan-20260417-18';
 
 const STATIC_ASSETS = [
   './',

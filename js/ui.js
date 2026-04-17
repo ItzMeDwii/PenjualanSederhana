@@ -10,8 +10,16 @@ function adjustContentMargin() {
 
 function toggleFilterDropdown() {
   const panel = document.getElementById('filterDropdownPanel');
+  const btn = document.getElementById('filterDropdownBtn');
   if (!panel) return;
-  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  if (panel.style.display === 'none' || panel.style.display === '') {
+    const rect = btn.getBoundingClientRect();
+    panel.style.top = (rect.bottom + 6) + 'px';
+    panel.style.left = rect.left + 'px';
+    panel.style.display = 'block';
+  } else {
+    panel.style.display = 'none';
+  }
 }
 
 function updateNavbarFiltersDisplay(tabName) {
