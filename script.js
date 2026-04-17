@@ -4013,7 +4013,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
 
-    checkWelcomeMessage(); 
+    // checkWelcomeMessage(); 
     setupModalCloseOnOutsideClick();
     initializeImagePaste();
     
