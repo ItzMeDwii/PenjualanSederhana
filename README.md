@@ -1,1 +1,3 @@
-# CacaPenjualan
+# Penjualan Sederhana
+
+Based on CacaPenjualan

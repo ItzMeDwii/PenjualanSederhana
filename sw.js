@@ -1,11 +1,30 @@
-const CACHE_NAME = 'penjualan-20260417-2';
+const CACHE_NAME = 'penjualan-20260417-3';
 
 const STATIC_ASSETS = [
   './',
   './index.html',
   './style.css',
-  './script.js',
   './manifest.json',
+  // JS modules
+  './js/state.js',
+  './js/utils.js',
+  './js/db.js',
+  './js/tags.js',
+  './js/promo.js',
+  './js/image.js',
+  './js/products.js',
+  './js/cart.js',
+  './js/checkout.js',
+  './js/categories.js',
+  './js/sales.js',
+  './js/dashboard.js',
+  './js/artists.js',
+  './js/preorders.js',
+  './js/payment-methods.js',
+  './js/import-export.js',
+  './js/delete-mode.js',
+  './js/ui.js',
+  './js/main.js',
   // CDN assets — cached on first load, served offline after
   'https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js',
   'https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css',
