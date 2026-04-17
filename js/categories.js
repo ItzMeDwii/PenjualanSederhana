@@ -194,10 +194,12 @@ async function deleteCategory(category, index) {
 
     const tabContent = document.getElementById(removedCategory);
     if (tabContent) tabContent.remove();
-    const navbarButtons = Array.from(document.querySelectorAll('.navbar button'));
-    const buttonToRemove = navbarButtons.find(button =>
-      button.textContent.trim().toLowerCase() === removedCategory.toLowerCase()
-    );
+    const categoryFilterBtns = document.getElementById('categoryFilterBtns');
+    const buttonToRemove = categoryFilterBtns
+      ? Array.from(categoryFilterBtns.querySelectorAll('button')).find(button =>
+          button.textContent.trim().toLowerCase() === removedCategory.toLowerCase()
+        )
+      : null;
     if (buttonToRemove) buttonToRemove.remove();
 
     const activeTab = document.querySelector('.tab-content.active');
@@ -206,13 +208,7 @@ async function deleteCategory(category, index) {
         showTab(categories[0]);
       } else {
         document.getElementById('dynamic-tabs').innerHTML = '<div class="empty-state">Tidak ada jenis barang. Tambahkan jenis barang baru untuk memulai.</div>';
-        const navbar = document.querySelector('.navbar');
-        navbar.innerHTML = '';
-        const manageBtn = document.createElement('button');
-        manageBtn.className = 'manage-category';
-        manageBtn.innerHTML = '<i class="fas fa-plus"></i> Jenis Barang';
-        manageBtn.onclick = showCategoryModal;
-        navbar.appendChild(manageBtn);
+        if (categoryFilterBtns) categoryFilterBtns.innerHTML = '';
       }
     }
 

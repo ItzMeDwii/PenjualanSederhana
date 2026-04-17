@@ -600,15 +600,18 @@ body {
 
 .navbar {
   position: fixed;
-  top: 55px;
+  top: 58px;
   left: 0;
   right: 0;
   background-color: var(--card-bg);
   display: flex;
+  align-items: center;
+  justify-content: space-between;
   overflow-x: auto;
   white-space: nowrap;
   z-index: 999;
-  padding: 10px 0;
+  padding: 8px 10px;
+  gap: 8px;
 }
 
    .save-btn {
@@ -670,6 +673,59 @@ body {
   display: none;
 }
 
+/* Navbar two-column layout */
+.navbar-filters-display {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 6px;
+  overflow-x: auto;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.navbar-filters-display::-webkit-scrollbar {
+  display: none;
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: auto;
+  padding-left: 8px;
+}
+
+/* Applied filter chips in navbar */
+.applied-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 16px;
+  padding: 4px 11px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: default;
+}
+
+.applied-filter-category {
+  background: #9b59b6;
+  color: #fff;
+  cursor: default;
+}
+
+.applied-filter-tag {
+  background: #4CAF50;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.applied-filter-tag:hover {
+  background: #388e3c;
+}
+
 .main-navbar button {
   background: #2c3e50;
   color: white;
@@ -710,6 +766,88 @@ body {
   align-items: center;
   padding: 10px 15px;
   height: 60px;
+}
+
+/* ===== FILTER DROPDOWN ===== */
+.filter-dropdown-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.filter-dropdown-panel {
+  position: fixed;
+  top: 60px;
+  right: 10px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+  z-index: 1100;
+  min-width: 260px;
+  max-width: 92vw;
+  padding: 14px;
+  animation: fadeIn 0.18s ease-out;
+}
+
+.filter-section {
+  margin-bottom: 10px;
+}
+
+.filter-section:last-child {
+  margin-bottom: 0;
+}
+
+.filter-section-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #999;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.filter-btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.filter-btn-group button {
+  background: #f0f0f0;
+  border: 1.5px solid transparent;
+  padding: 5px 13px;
+  border-radius: 20px;
+  font-size: 13px;
+  cursor: pointer;
+  color: #444;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.filter-btn-group button:hover {
+  background: #e8d8f8;
+  color: #7b2d8b;
+}
+
+.filter-btn-group button.active-category {
+  background: #d43fd5;
+  border-color: #d43fd5;
+  color: #fff;
+  font-weight: 600;
+}
+
+#filterDropdownBtn {
+  position: relative;
+}
+
+.filter-active-dot {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 7px;
+  height: 7px;
+  background: #f39c12;
+  border-radius: 50%;
+  pointer-events: none;
 }
 
 

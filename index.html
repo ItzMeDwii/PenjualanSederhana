@@ -182,6 +182,23 @@
         </button>
       </div>
 
+      <div class="filter-dropdown-wrapper">
+        <button id="filterDropdownBtn" class="control-button" onclick="toggleFilterDropdown()" title="Filter">
+          <i class="fas fa-sliders-h"></i>
+          <span class="filter-active-dot" id="filterActiveDot" style="display:none;"></span>
+        </button>
+        <div id="filterDropdownPanel" class="filter-dropdown-panel" style="display:none;">
+          <div class="filter-section">
+            <div class="filter-section-label">Jenis Barang</div>
+            <div id="categoryFilterBtns" class="filter-btn-group"></div>
+          </div>
+          <div class="filter-section" id="tagFilterSection" style="display:none;">
+            <div class="filter-section-label">Tag</div>
+            <div id="tagFilterBtns" class="filter-btn-group"></div>
+          </div>
+        </div>
+      </div>
+
       <div class="menu-controls">
         <button
           onclick="
@@ -211,16 +228,13 @@
     </div>
 
     <div class="navbar main-navbar" id="mainNavbar">
-      <button class="manage-category" onclick="showCategoryModal()">
-        <i class="fas fa-plus"></i> Jenis Barang
-      </button>
+      <div id="navbarFiltersDisplay" class="navbar-filters-display"></div>
+      <div class="navbar-actions">
+        <button class="manage-category" onclick="showCategoryModal()">
+          <i class="fas fa-plus"></i> Jenis Barang
+        </button>
+      </div>
     </div>
-    <div
-      id="globalTagFilterBar"
-      class="global-tag-filter-bar"
-      style="display: none"
-    ></div>
-
     <div
       class="cart-sidebar-overlay"
       id="cartSidebarOverlay"

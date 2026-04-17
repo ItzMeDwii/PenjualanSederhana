@@ -3,11 +3,34 @@
 function adjustContentMargin() {
   const menuBarHeight = document.querySelector('.menu-bar').offsetHeight;
   const navbarHeight = document.querySelector('.navbar').offsetHeight;
-  const tagFilterBar = document.getElementById('globalTagFilterBar');
-  const tagFilterHeight = (tagFilterBar && tagFilterBar.style.display !== 'none') ? tagFilterBar.offsetHeight : 0;
-  const totalHeight = menuBarHeight + navbarHeight + tagFilterHeight + 0;
+  const totalHeight = menuBarHeight + navbarHeight;
   document.body.style.marginTop = totalHeight + 'px';
-  document.documentElement.style.setProperty('--total-header-height', `${menuBarHeight + navbarHeight}px`);
+  document.documentElement.style.setProperty('--total-header-height', `${totalHeight}px`);
+}
+
+function toggleFilterDropdown() {
+  const panel = document.getElementById('filterDropdownPanel');
+  if (!panel) return;
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+function updateNavbarFiltersDisplay(tabName) {
+  const display = document.getElementById('navbarFiltersDisplay');
+  if (!display) return;
+
+  const categoryLabel = tabName === '__all__' ? 'Semua' : (tabName ? capitalizeFirstLetter(tabName) : '');
+  const activeTags = (activeTagFilters[tabName] && activeTagFilters[tabName].size > 0)
+    ? [...activeTagFilters[tabName]]
+    : [];
+
+  let html = '';
+  if (categoryLabel) {
+    html += `<span class="applied-filter-chip applied-filter-category">${categoryLabel}</span>`;
+  }
+  activeTags.forEach(tag => {
+    html += `<span class="applied-filter-chip applied-filter-tag" onclick="toggleTagFilter('${tabName}', '${escapeHtml(tag)}')">${escapeHtml(tag)} <i class='fas fa-times' style='font-size:9px;margin-left:3px;'></i></span>`;
+  });
+  display.innerHTML = html;
 }
 
 function showTab(tabName) {
@@ -40,7 +63,8 @@ function showTab(tabName) {
     }, 300);
   }
 
-  const activeButton = document.querySelector(`.navbar button[onclick="showTab('${tabName}')"]`);
+  document.querySelectorAll('#categoryFilterBtns button').forEach(b => b.classList.remove('active-category'));
+  const activeButton = document.querySelector(`#categoryFilterBtns button[data-tab="${tabName}"]`);
   if (activeButton) {
     activeButton.classList.add('active-category');
   }
@@ -54,6 +78,7 @@ function showTab(tabName) {
   }
 
   renderTagFilterBar(tabName);
+  updateNavbarFiltersDisplay(tabName);
   if (tabName === '__all__') {
     renderAllProductsTab();
   }
@@ -65,7 +90,7 @@ function showTab(tabName) {
 function loadActiveTab() {
   const savedTab = localStorage.getItem('activeTab');
   if (savedTab) {
-    const activeButton = document.querySelector(`.navbar button[onclick="showTab('${savedTab}')"]`);
+    const activeButton = document.querySelector(`#categoryFilterBtns button[data-tab="${savedTab}"]`);
     if (activeButton) {
       activeButton.classList.add('active-category');
     }

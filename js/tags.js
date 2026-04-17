@@ -1,8 +1,9 @@
 // Tag filter bar rendering and management
 
 function renderTagFilterBar(category) {
-  const globalBar = document.getElementById('globalTagFilterBar');
-  if (!globalBar) return;
+  const tagFilterSection = document.getElementById('tagFilterSection');
+  const tagFilterBtns = document.getElementById('tagFilterBtns');
+  if (!tagFilterSection || !tagFilterBtns) return;
 
   // Collect all unique tags — for __all__, scan every category
   const allTags = new Set();
@@ -23,10 +24,8 @@ function renderTagFilterBar(category) {
   }
 
   if (allTags.size === 0) {
-    globalBar.innerHTML = '';
-    globalBar.style.display = 'none';
-    document.documentElement.style.setProperty('--tag-filter-height', '0px');
-    adjustContentMargin();
+    tagFilterSection.style.display = 'none';
+    tagFilterBtns.innerHTML = '';
     return;
   }
 
@@ -38,15 +37,8 @@ function renderTagFilterBar(category) {
     html += `<button class="tag-filter-btn ${isActive ? 'active' : ''}" onclick="toggleTagFilter('${category}', '${escapeHtml(tag)}')">${escapeHtml(tag)}</button>`;
   });
 
-  globalBar.innerHTML = html;
-  globalBar.style.display = 'flex';
-
-  // Let the browser paint, then measure and adjust margin
-  requestAnimationFrame(() => {
-    const h = globalBar.offsetHeight;
-    document.documentElement.style.setProperty('--tag-filter-height', `${h}px`);
-    adjustContentMargin();
-  });
+  tagFilterBtns.innerHTML = html;
+  tagFilterSection.style.display = 'block';
 }
 
 function toggleTagFilter(category, tag) {
@@ -58,10 +50,14 @@ function toggleTagFilter(category, tag) {
   } else {
     activeTagFilters[category].add(tag);
   }
+  renderTagFilterBar(category);
+  updateNavbarFiltersDisplay(category);
   renderProducts();
 }
 
 function resetTagFilter(category) {
   activeTagFilters[category] = new Set();
+  renderTagFilterBar(category);
+  updateNavbarFiltersDisplay(category);
   renderProducts();
 }

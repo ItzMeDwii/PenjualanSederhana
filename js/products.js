@@ -3,15 +3,28 @@
 function updateNavbarCategories() {
   const navbar = document.querySelector('.navbar');
   const tabContainer = document.getElementById('dynamic-tabs');
+  const categoryFilterBtns = document.getElementById('categoryFilterBtns');
 
   navbar.innerHTML = '';
   tabContainer.innerHTML = '';
+  if (categoryFilterBtns) categoryFilterBtns.innerHTML = '';
+
+  // Left: applied filters display
+  const filtersDisplay = document.createElement('div');
+  filtersDisplay.id = 'navbarFiltersDisplay';
+  filtersDisplay.className = 'navbar-filters-display';
+  navbar.appendChild(filtersDisplay);
+
+  // Right: action buttons
+  const actionsGroup = document.createElement('div');
+  actionsGroup.className = 'navbar-actions';
+  navbar.appendChild(actionsGroup);
 
   const manageBtn = document.createElement('button');
   manageBtn.className = 'manage-category';
   manageBtn.innerHTML = '<i class="fas fa-plus"></i> Jenis Barang';
   manageBtn.onclick = showCategoryModal;
-  navbar.appendChild(manageBtn);
+  actionsGroup.appendChild(manageBtn);
 
   const bulkDeleteBtn = document.createElement('button');
   bulkDeleteBtn.className = 'navbar-bulk-btn navbar-bulk-delete-btn';
@@ -21,7 +34,7 @@ function updateNavbarCategories() {
     if (isDeleteMode && bulkActionMode === 'delete') exitDeleteMode();
     else activateBulkDeleteMode();
   };
-  navbar.appendChild(bulkDeleteBtn);
+  actionsGroup.appendChild(bulkDeleteBtn);
 
   const bulkEditBtn = document.createElement('button');
   bulkEditBtn.className = 'navbar-bulk-btn navbar-bulk-edit-btn';
@@ -31,13 +44,14 @@ function updateNavbarCategories() {
     if (isDeleteMode && bulkActionMode === 'edit') exitDeleteMode();
     else activateBulkEditSelectionMode();
   };
-  navbar.appendChild(bulkEditBtn);
+  actionsGroup.appendChild(bulkEditBtn);
 
   if (categories.filter(c => c && typeof c === 'string').length > 0) {
     const allBtn = document.createElement('button');
     allBtn.textContent = 'Semua';
+    allBtn.dataset.tab = '__all__';
     allBtn.onclick = () => showTab('__all__');
-    navbar.insertBefore(allBtn, manageBtn);
+    if (categoryFilterBtns) categoryFilterBtns.appendChild(allBtn);
 
     if (!document.getElementById('__all__')) {
       const allTab = document.createElement('div');
@@ -51,8 +65,9 @@ function updateNavbarCategories() {
   categories.filter(cat => cat && typeof cat === 'string').forEach(category => {
     const button = document.createElement('button');
     button.textContent = capitalizeFirstLetter(category);
+    button.dataset.tab = category;
     button.onclick = () => showTab(category);
-    navbar.insertBefore(button, manageBtn);
+    if (categoryFilterBtns) categoryFilterBtns.appendChild(button);
 
     if (!document.getElementById(category)) {
       const tabContent = document.createElement('div');
@@ -225,7 +240,7 @@ function filterProducts(searchTerm) {
     });
   }, 100);
 
-  document.querySelectorAll('.navbar button:not(.manage-category)').forEach(btn => {
+  document.querySelectorAll('#categoryFilterBtns button').forEach(btn => {
     btn.classList.remove('active-category');
     btn.style.backgroundColor = '';
   });

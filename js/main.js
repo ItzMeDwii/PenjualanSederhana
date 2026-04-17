@@ -41,6 +41,11 @@ document.addEventListener('click', (e) => {
       }
     });
   }
+  // Close filter dropdown when clicking outside
+  if (!e.target.closest('#filterDropdownPanel') && !e.target.closest('#filterDropdownBtn')) {
+    const panel = document.getElementById('filterDropdownPanel');
+    if (panel) panel.style.display = 'none';
+  }
 });
 
 document.addEventListener("DOMContentLoaded", function () {
