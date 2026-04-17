@@ -3,6 +3,19 @@
 // PWA install prompt
 let _deferredInstallPrompt = null;
 
+// Show active SW cache name in sidebar
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.ready.then((reg) => {
+    reg.active.postMessage({ type: 'GET_CACHE_NAME' });
+  });
+  navigator.serviceWorker.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'CACHE_NAME') {
+      const el = document.getElementById('swVersionLabel');
+      if (el) el.textContent = `v: ${e.data.value}`;
+    }
+  });
+}
+
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   _deferredInstallPrompt = e;
