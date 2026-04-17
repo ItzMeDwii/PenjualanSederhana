@@ -72,6 +72,9 @@ function updateNavbarCategories() {
           <label>Tags <span style="font-weight:normal;font-size:12px;color:#888;">(pisahkan koma, contoh: standard, mini)</span></label>
           <input type="text" name="tags" placeholder="Contoh: standard, mini, A5" autocomplete="off" />
           <button type="submit"><i class="fas fa-plus"></i> Tambah Barang</button>
+          <button type="button" class="bulk-open-btn" onclick="openBulkAddModal('${category}')">
+            <i class="fas fa-layer-group"></i> Tambah Massal
+          </button>
         </form>
       `;
       tabContainer.appendChild(tabContent);
@@ -668,6 +671,326 @@ async function addProduct(event, category) {
     showNotification("Gagal menambahkan produk! " + error.message);
   }
 }
+
+// ── Bulk Add ─────────────────────────────────────────────────────────────────
+
+let bulkRowCounter = 0;
+
+function openBulkAddModal(category) {
+  const modal = document.getElementById('bulkAddModal');
+
+  // populate category select
+  const catSelect = document.getElementById('bulkCategory');
+  catSelect.innerHTML = '';
+  categories.filter(c => c && typeof c === 'string').forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = capitalizeFirstLetter(c);
+    if (c === category) opt.selected = true;
+    catSelect.appendChild(opt);
+  });
+
+  // populate shared artist select
+  const artSelect = document.getElementById('bulkArtist');
+  artSelect.innerHTML = '<option value="">Tanpa Artist</option>';
+  artists.forEach(a => {
+    const opt = document.createElement('option');
+    opt.value = a;
+    opt.textContent = a;
+    artSelect.appendChild(opt);
+  });
+
+  // reset shared fields and checkboxes to "shared" state
+  document.getElementById('bulkPrice').value = '';
+  document.getElementById('bulkTags').value = '';
+  document.getElementById('bulkStock').value = '';
+  document.getElementById('bulkArtist').style.display = '';
+  document.getElementById('bulkPrice').style.display = '';
+  document.getElementById('bulkTags').style.display = '';
+  document.getElementById('bulkStock').style.display = '';
+  document.getElementById('bulkArtistShared').checked = true;
+  document.getElementById('bulkPriceShared').checked = true;
+  document.getElementById('bulkTagsShared').checked = true;
+  document.getElementById('bulkStockShared').checked = true;
+
+  // reset rows — start with one
+  const rowsContainer = document.getElementById('bulkItemRows');
+  rowsContainer.innerHTML = '';
+  bulkRowCounter = 0;
+  addBulkRow();
+
+  modal.style.display = 'flex';
+  document.body.classList.add('modal-open');
+}
+
+function closeBulkAddModal() {
+  document.getElementById('bulkAddModal').style.display = 'none';
+  document.body.classList.remove('modal-open');
+}
+
+// Returns the HTML snippet to inject into a row for an individual field
+function getBulkIndividualFieldHtml(field) {
+  if (field === 'artist') {
+    const opts = artists.map(a => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join('');
+    return `<div class="bulk-row-individual-field" data-bulk-field="artist">
+      <label>Artist (individual)</label>
+      <select name="bulk_artist"><option value="">Tanpa Artist</option>${opts}</select>
+    </div>`;
+  }
+  if (field === 'price') {
+    return `<div class="bulk-row-individual-field" data-bulk-field="price">
+      <label>Harga (individual)</label>
+      <input type="text" name="bulk_price" placeholder="Harga (Rp)" required
+        oninput="formatRupiahInput(this)" inputmode="numeric" pattern="[0-9.]*" />
+    </div>`;
+  }
+  if (field === 'tags') {
+    return `<div class="bulk-row-individual-field" data-bulk-field="tags">
+      <label>Tags (individual) <span style="font-weight:normal;font-size:11px;color:#888">(pisahkan koma)</span></label>
+      <input type="text" name="bulk_tags" placeholder="Contoh: standard, mini, A5" autocomplete="off" />
+    </div>`;
+  }
+  if (field === 'stock') {
+    return `<div class="bulk-row-individual-field" data-bulk-field="stock">
+      <label>Stok (individual)</label>
+      <input type="number" name="bulk_stock" placeholder="Stok" required min="0" />
+    </div>`;
+  }
+  return '';
+}
+
+function toggleBulkShared(field) {
+  const capField = field.charAt(0).toUpperCase() + field.slice(1);
+  const isShared = document.getElementById(`bulk${capField}Shared`).checked;
+
+  // Show/hide the shared input (the element right after the label-row inside the section)
+  const sharedInputId = field === 'artist' ? 'bulkArtist' :
+                        field === 'price'  ? 'bulkPrice'  :
+                        field === 'stock'  ? 'bulkStock'  : 'bulkTags';
+  document.getElementById(sharedInputId).style.display = isShared ? '' : 'none';
+
+  // Add or remove individual field from all existing rows
+  document.querySelectorAll('#bulkItemRows .bulk-item-row').forEach(row => {
+    const existing = row.querySelector(`.bulk-row-individual-field[data-bulk-field="${field}"]`);
+    if (!isShared && !existing) {
+      const optionalSection = row.querySelector('.bulk-row-optional-fields');
+      optionalSection.insertAdjacentHTML('beforeend', getBulkIndividualFieldHtml(field));
+    } else if (isShared && existing) {
+      existing.remove();
+    }
+  });
+}
+
+function addBulkRow() {
+  bulkRowCounter++;
+  const n = bulkRowCounter;
+  const rowsContainer = document.getElementById('bulkItemRows');
+
+  const artistIndividual = !document.getElementById('bulkArtistShared').checked;
+  const priceIndividual  = !document.getElementById('bulkPriceShared').checked;
+  const tagsIndividual   = !document.getElementById('bulkTagsShared').checked;
+  const stockIndividual  = !document.getElementById('bulkStockShared').checked;
+
+  const row = document.createElement('div');
+  row.className = 'bulk-item-row';
+  row.dataset.rowId = n;
+
+  row.innerHTML = `
+    <div class="bulk-row-header">
+      <span class="bulk-row-label">Item #${n}</span>
+      <button type="button" class="bulk-remove-row-btn" onclick="removeBulkRow(this)" title="Hapus item ini">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <label>Kode Barang</label>
+    <input type="text" name="bulk_code" placeholder="Kode Barang" required />
+    <div class="bulk-row-optional-fields">
+      ${stockIndividual  ? getBulkIndividualFieldHtml('stock')  : ''}
+      ${artistIndividual ? getBulkIndividualFieldHtml('artist') : ''}
+      ${priceIndividual  ? getBulkIndividualFieldHtml('price')  : ''}
+      ${tagsIndividual   ? getBulkIndividualFieldHtml('tags')   : ''}
+    </div>
+    <label>Gambar</label>
+    <div class="image-input-container image-paste-area">
+      <div class="image-source-buttons">
+        <button type="button" class="image-source-btn" onclick="openBulkCamera(this)">
+          <i class="fas fa-camera"></i> Kamera
+        </button>
+        <button type="button" class="image-source-btn" onclick="openBulkGallery(this)">
+          <i class="fas fa-images"></i> Galeri
+        </button>
+      </div>
+      <div class="paste-instruction">atau tempel gambar di sini</div>
+      <input type="file" name="bulk_imageFile" accept="image/*" style="display:none"
+        onchange="previewBulkImage(event, this)" />
+      <img class="preview" style="display:none" />
+    </div>
+  `;
+
+  rowsContainer.appendChild(row);
+}
+
+function removeBulkRow(btn) {
+  const row = btn.closest('.bulk-item-row');
+  if (document.querySelectorAll('.bulk-item-row').length <= 1) {
+    showNotification('Minimal harus ada 1 item!');
+    return;
+  }
+  row.remove();
+}
+
+function openBulkCamera(btn) {
+  const input = btn.closest('.image-input-container').querySelector('input[type="file"]');
+  if (input) {
+    input.setAttribute('capture', 'environment');
+    input.click();
+  }
+}
+
+function openBulkGallery(btn) {
+  const input = btn.closest('.image-input-container').querySelector('input[type="file"]');
+  if (input) {
+    input.removeAttribute('capture');
+    input.click();
+  }
+}
+
+function previewBulkImage(event, input) {
+  if (input.pastedFile) delete input.pastedFile;
+  const file = input.files[0];
+  if (!file) return;
+  const preview = input.closest('.image-input-container').querySelector('img.preview');
+  const reader = new FileReader();
+  reader.onload = e => {
+    preview.src = e.target.result;
+    preview.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+async function submitBulkAdd(event) {
+  event.preventDefault();
+
+  const category = document.getElementById('bulkCategory').value;
+
+  // Determine which fields are shared vs individual
+  const artistShared = document.getElementById('bulkArtistShared').checked;
+  const priceShared  = document.getElementById('bulkPriceShared').checked;
+  const tagsShared   = document.getElementById('bulkTagsShared').checked;
+  const stockShared  = document.getElementById('bulkStockShared').checked;
+
+  // Read shared values
+  const sharedArtist = artistShared ? document.getElementById('bulkArtist').value : null;
+  const sharedPriceStr = priceShared ? document.getElementById('bulkPrice').value : null;
+  const sharedPrice = priceShared ? parseFloat((sharedPriceStr || '').replace(/\./g, '').replace(',', '.')) : null;
+  const sharedTagsInput = tagsShared ? document.getElementById('bulkTags').value : '';
+  const sharedTags = tagsShared ? sharedTagsInput.split(',').map(t => t.trim().toLowerCase()).filter(t => t.length > 0) : null;
+  const sharedStock = stockShared ? parseInt(document.getElementById('bulkStock').value) : null;
+
+  if (priceShared && (isNaN(sharedPrice) || sharedPrice < 100)) {
+    showNotification('Harga harus diisi (minimal Rp100)!');
+    return;
+  }
+  if (stockShared && (isNaN(sharedStock) || sharedStock < 0)) {
+    showNotification('Stok harus diisi (tidak boleh negatif)!');
+    return;
+  }
+
+  const rows = document.querySelectorAll('#bulkItemRows .bulk-item-row');
+  if (rows.length === 0) {
+    showNotification('Tambahkan minimal 1 item!');
+    return;
+  }
+
+  // Validate all rows first
+  const itemsToAdd = [];
+  for (const row of rows) {
+    const code = row.querySelector('input[name="bulk_code"]').value.trim();
+    const fileInput = row.querySelector('input[name="bulk_imageFile"]');
+    const file = fileInput.pastedFile || (fileInput.files.length > 0 ? fileInput.files[0] : null);
+
+    // Individual field values
+    const stockEl  = row.querySelector('[data-bulk-field="stock"] input');
+    const artistEl = row.querySelector('[data-bulk-field="artist"] select');
+    const priceEl  = row.querySelector('[data-bulk-field="price"] input');
+    const tagsEl   = row.querySelector('[data-bulk-field="tags"] input');
+
+    const stock  = stockShared  ? sharedStock  : parseInt(stockEl ? stockEl.value : '');
+    const artist = artistShared ? sharedArtist : (artistEl ? artistEl.value : '');
+
+    const rowPriceStr = !priceShared && priceEl ? priceEl.value.replace(/\./g, '').replace(',', '.') : null;
+    const price = priceShared ? sharedPrice : parseFloat(rowPriceStr || '');
+
+    const rowTagsInput = !tagsShared && tagsEl ? tagsEl.value : '';
+    const tags = tagsShared ? sharedTags : rowTagsInput.split(',').map(t => t.trim().toLowerCase()).filter(t => t.length > 0);
+
+    if (!code) {
+      showNotification('Kode barang harus diisi untuk semua item!');
+      return;
+    }
+    if (isProductCodeDuplicate(code, null)) {
+      showNotification(`Kode barang "${code}" sudah ada. Harap gunakan kode lain!`);
+      return;
+    }
+    if (itemsToAdd.some(i => i.code.toLowerCase() === code.toLowerCase())) {
+      showNotification(`Kode barang "${code}" duplikat dalam satu batch!`);
+      return;
+    }
+    if (!stockShared && (isNaN(stock) || stock < 0)) {
+      showNotification(`Stok untuk kode "${code}" harus diisi (tidak boleh negatif)!`);
+      return;
+    }
+    if (!priceShared && (isNaN(price) || price < 100)) {
+      showNotification(`Harga untuk kode "${code}" harus diisi (minimal Rp100)!`);
+      return;
+    }
+    if (!file) {
+      showNotification(`Gambar untuk kode "${code}" wajib diupload atau ditempel!`);
+      return;
+    }
+
+    itemsToAdd.push({ code, stock, file, artist, price, tags });
+  }
+
+  try {
+    if (!data[category]) data[category] = [];
+
+    const newArtists = [];
+    for (const item of itemsToAdd) {
+      const compressedImage = await compressImage(item.file);
+      data[category].push({
+        name: item.code,
+        code: item.code,
+        artist: item.artist || '',
+        image: compressedImage,
+        price: item.price,
+        stock: item.stock,
+        tags: item.tags,
+        category
+      });
+      if (item.artist && item.artist.trim() !== '' && !artists.includes(item.artist) && !newArtists.includes(item.artist)) {
+        newArtists.push(item.artist);
+      }
+    }
+
+    if (newArtists.length > 0) {
+      artists.push(...newArtists);
+      artists.sort((a, b) => a.localeCompare(b));
+      await saveToIndexedDB(STORE_NAMES.ARTISTS, artists.map(a => ({ name: a })));
+      populateArtistSelects();
+    }
+
+    await saveToIndexedDB(STORE_NAMES.PRODUCTS, data);
+    renderProducts();
+    closeBulkAddModal();
+    showNotification(`${itemsToAdd.length} produk berhasil ditambahkan ke ${capitalizeFirstLetter(category)}!`);
+  } catch (error) {
+    console.error('Gagal menyimpan produk massal:', error);
+    showNotification('Gagal menyimpan produk! ' + error.message);
+  }
+}
+
+// ── End Bulk Add ──────────────────────────────────────────────────────────────
 
 function increaseQuantity(category, index) {
   const item = data[category][index];

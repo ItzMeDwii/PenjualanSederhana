@@ -805,6 +805,80 @@
       </div>
     </div>
 
+    <!-- Bulk Add Modal -->
+    <div id="bulkAddModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeBulkAddModal()">
+      <div class="modal-content bulk-add-modal-content" onclick="event.stopPropagation()">
+        <button class="close-modal" onclick="closeBulkAddModal()"><i class="fas fa-times"></i></button>
+        <h3>Tambah Barang Massal</h3>
+        <div class="modal-scrollable-content">
+          <form id="bulkAddForm" onsubmit="submitBulkAdd(event)">
+            <label>Jenis Barang</label>
+            <select id="bulkCategory" name="category" required></select>
+
+            <div class="bulk-shared-section">
+              <div class="bulk-shared-label-row">
+                <label>Artist</label>
+                <label class="bulk-toggle-label">
+                  <input type="checkbox" id="bulkArtistShared" checked onchange="toggleBulkShared('artist')">
+                  Sama untuk semua
+                </label>
+              </div>
+              <select id="bulkArtist" name="artist" id="bulkArtistSharedInput">
+                <option value="">Tanpa Artist</option>
+              </select>
+            </div>
+
+            <div class="bulk-shared-section">
+              <div class="bulk-shared-label-row">
+                <label>Harga</label>
+                <label class="bulk-toggle-label">
+                  <input type="checkbox" id="bulkPriceShared" checked onchange="toggleBulkShared('price')">
+                  Sama untuk semua
+                </label>
+              </div>
+              <input type="text" id="bulkPrice" placeholder="Harga (Rp)"
+                oninput="formatRupiahInput(this)" inputmode="numeric" pattern="[0-9.]*" />
+            </div>
+
+            <div class="bulk-shared-section">
+              <div class="bulk-shared-label-row">
+                <label>Tags <span style="font-weight:normal;font-size:11px;color:#888">(pisahkan koma)</span></label>
+                <label class="bulk-toggle-label">
+                  <input type="checkbox" id="bulkTagsShared" checked onchange="toggleBulkShared('tags')">
+                  Sama untuk semua
+                </label>
+              </div>
+              <input type="text" id="bulkTags" placeholder="Contoh: standard, mini, A5" autocomplete="off" />
+            </div>
+
+            <div class="bulk-shared-section">
+              <div class="bulk-shared-label-row">
+                <label>Stok</label>
+                <label class="bulk-toggle-label">
+                  <input type="checkbox" id="bulkStockShared" checked onchange="toggleBulkShared('stock')">
+                  Sama untuk semua
+                </label>
+              </div>
+              <input type="number" id="bulkStock" placeholder="Stok" min="0" />
+            </div>
+
+            <div class="bulk-items-header">
+              <span>Daftar Item</span>
+              <button type="button" class="bulk-add-row-btn" onclick="addBulkRow()">
+                <i class="fas fa-plus"></i> Tambah Item
+              </button>
+            </div>
+
+            <div id="bulkItemRows"></div>
+
+            <button type="submit" class="bulk-submit-btn">
+              <i class="fas fa-save"></i> Simpan Semua
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/exif-js/2.3.0/exif.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
