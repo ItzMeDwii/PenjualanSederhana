@@ -1,4 +1,4 @@
-const CACHE_NAME = 'penjualan-20260417-9';
+const CACHE_NAME = 'penjualan-20260417-10';
 
 const STATIC_ASSETS = [
   './',
@@ -64,8 +64,9 @@ self.addEventListener('activate', (event) => {
 
 // Fetch: cache-first for static assets, network-first for everything else
 self.addEventListener('fetch', (event) => {
-  // Only handle GET requests
+  // Only handle GET requests with http/https schemes
   if (event.request.method !== 'GET') return;
+  if (!event.request.url.startsWith('http')) return;
 
   event.respondWith(
     caches.match(event.request).then((cached) => {

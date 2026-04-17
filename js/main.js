@@ -29,6 +29,10 @@ if ("serviceWorker" in navigator) {
 
 window.addEventListener("beforeinstallprompt", (e) => {
   e.preventDefault();
+  // Don't show banner if already running as installed PWA
+  if (window.matchMedia("(display-mode: standalone)").matches || navigator.standalone) return;
+  // Don't show banner on desktop — use browser's built-in install button instead
+  if (!window.matchMedia("(hover: none) and (pointer: coarse)").matches) return;
   _deferredInstallPrompt = e;
   const banner = document.getElementById("installBanner");
   if (banner) banner.style.display = "flex";
