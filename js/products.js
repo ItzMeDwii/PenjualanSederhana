@@ -286,15 +286,14 @@ function renderAllProductsTab() {
     card.setAttribute('data-index', index);
     card.innerHTML = `
       <div class="product-img-container" data-product-id="${productId}">
-        ${cartQty > 0 ? `<div class="product-badge">${cartQty}</div>` : ''}
-        ${item.code ? `<div class="product-code-badge">${item.code}</div>` : ''}
         <img src="${item.image}" class="product-img" alt="${item.name}" loading="lazy">
       </div>
       <div class="product-info">
         <div>
+          ${item.code ? `<h3 class="product-name">${escapeHtml(item.code)}</h3>` : ''}
           ${hasNoArtist ?
-            `<div class="product-artist no-artist" style="font-size: 14px;">    Tanpa Artist</div>` :
-            `<div class="product-artist has-artist" style="font-size: 14px;">   ${escapeHtml(item.artist)}</div>`
+            `<div class="product-artist no-artist" style="font-size: 13px;">    Tanpa Artist</div>` :
+            `<div class="product-artist has-artist" style="font-size: 13px;">   ${escapeHtml(item.artist)}</div>`
           }
           <div class="product-price">Rp${formatRupiah(item.price)}</div>
           <div class="stock-info-container">
@@ -372,15 +371,14 @@ function renderProducts() {
 
         card.innerHTML = `
           <div class="product-img-container" data-product-id="${productId}">
-            ${cartQty > 0 ? `<div class="product-badge">${cartQty}</div>` : ''}
-            ${item.code ? `<div class="product-code-badge">${item.code}</div>` : ''}
             <img src="${item.image}" class="product-img" alt="${item.name}" loading="lazy">
           </div>
           <div class="product-info">
             <div>
+              ${item.code ? `<h3 class="product-name">${escapeHtml(item.code)}</h3>` : ''}
               ${hasNoArtist ?
-                `<div class="product-artist no-artist" style="font-size: 14px;">    Tanpa Artist</div>` :
-                `<div class="product-artist has-artist" style="font-size: 14px;">   ${escapeHtml(item.artist)}</div>`
+                `<div class="product-artist no-artist" style="font-size: 13px;">    Tanpa Artist</div>` :
+                `<div class="product-artist has-artist" style="font-size: 13px;">   ${escapeHtml(item.artist)}</div>`
               }
               <div class="product-price">Rp${formatRupiah(item.price)}</div>
               <div class="stock-info-container">

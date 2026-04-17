@@ -1220,8 +1220,9 @@ img {
 }
 
 .product-name {
-  display: none;
-
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 2px 0;
 }
 
 .product-price {
@@ -4526,7 +4527,7 @@ form.add-form label:has(+ select[name="artist"]) {
   border-radius: 20px !important;
   display: inline-block !important;
   padding: 4px 12px !important;
-  font-size: 14px !important;
+  font-size: 13px !important;
   font-weight: bold !important;
   margin-top: 4px !important;
   margin-bottom: 4px !important;
@@ -4802,7 +4803,7 @@ form.add-form label:has(+ select[name="artist"]) {
   border-radius: 20px !important;
   display: inline-block !important;
   padding: 4px 12px !important;
-  font-size: 14px !important;
+  font-size: 13px !important;
   font-weight: bold !important;
   margin-top: 4px !important;
   margin-bottom: 4px !important;
