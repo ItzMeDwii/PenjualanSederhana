@@ -1,8 +1,5 @@
 // App initialization
 
-// PWA install prompt
-let _deferredInstallPrompt = null;
-
 // Show active SW cache name in sidebar
 if ("serviceWorker" in navigator) {
   function requestCacheName() {
@@ -26,23 +23,6 @@ if ("serviceWorker" in navigator) {
     requestCacheName,
   );
 }
-
-window.addEventListener("beforeinstallprompt", (e) => {
-  e.preventDefault();
-  // Don't show banner if already running as installed PWA
-  if (window.matchMedia("(display-mode: standalone)").matches || navigator.standalone) return;
-  // Don't show banner on desktop — use browser's built-in install button instead
-  if (!window.matchMedia("(hover: none) and (pointer: coarse)").matches) return;
-  _deferredInstallPrompt = e;
-  const banner = document.getElementById("installBanner");
-  if (banner) banner.style.display = "flex";
-});
-
-window.addEventListener("appinstalled", () => {
-  _deferredInstallPrompt = null;
-  const banner = document.getElementById("installBanner");
-  if (banner) banner.style.display = "none";
-});
 
 window.addEventListener("load", () => {
   adjustContentMargin();
@@ -98,30 +78,6 @@ document.addEventListener("DOMContentLoaded", function () {
       // checkWelcomeMessage();
       setupModalCloseOnOutsideClick();
       initializeImagePaste();
-
-      const installBannerAccept = document.getElementById(
-        "installBannerAccept",
-      );
-      const installBannerDismiss = document.getElementById(
-        "installBannerDismiss",
-      );
-      const installBanner = document.getElementById("installBanner");
-
-      if (installBannerAccept) {
-        installBannerAccept.addEventListener("click", async () => {
-          if (!_deferredInstallPrompt) return;
-          _deferredInstallPrompt.prompt();
-          const { outcome } = await _deferredInstallPrompt.userChoice;
-          _deferredInstallPrompt = null;
-          if (installBanner) installBanner.style.display = "none";
-        });
-      }
-
-      if (installBannerDismiss) {
-        installBannerDismiss.addEventListener("click", () => {
-          if (installBanner) installBanner.style.display = "none";
-        });
-      }
 
       const btnDeleteSelected = document.getElementById("btnDeleteSelected");
       const btnCancelDeleteMode = document.getElementById(
