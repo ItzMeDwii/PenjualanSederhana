@@ -494,6 +494,14 @@
       <span class="badge" id="cartBadge">0</span>
     </button>
 
+    <div id="installBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#1e1e2e;color:#fff;padding:14px 16px;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 -2px 12px rgba(0,0,0,0.4);">
+      <span style="font-size:14px;"><i class="fas fa-download" style="margin-right:8px;"></i>Pasang aplikasi ini ke perangkat?</span>
+      <div style="display:flex;gap:8px;flex-shrink:0;">
+        <button id="installBannerAccept" style="background:#7c3aed;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer;">Pasang</button>
+        <button id="installBannerDismiss" style="background:transparent;color:#aaa;border:1px solid #444;border-radius:8px;padding:8px 12px;font-size:13px;cursor:pointer;">Nanti</button>
+      </div>
+    </div>
+
     <div id="notification" class="notification" style="display: none"></div>
 
     <div id="welcomeModal" class="modal">
