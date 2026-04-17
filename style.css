@@ -5046,6 +5046,134 @@ form.add-form label:has(+ select[name="artist"]) {
   margin-top: 4px;
 }
 
+.delete-mode-bar .btn-bulk-edit-confirm {
+  background: #2980b9;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+.delete-mode-bar .btn-bulk-edit-confirm:hover {
+  background: #2471a3;
+}
+
+.bulk-edit-mode-bar {
+  background: #1a2a3a;
+}
+
+/* ── Navbar Bulk Buttons ───────────────────────────────────────────────────── */
+
+.navbar-bulk-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 13px;
+  font-size: 13px;
+  cursor: pointer;
+  color: white;
+  flex: 0 0 auto;
+  transition: background-color 0.2s;
+}
+
+.navbar-bulk-delete-btn {
+  background: #e74c3c;
+}
+.navbar-bulk-delete-btn:hover {
+  background: #c0392b;
+}
+
+.navbar-bulk-edit-btn {
+  background: #2980b9;
+}
+.navbar-bulk-edit-btn:hover {
+  background: #2471a3;
+}
+
+/* ── Bulk Edit Modal ───────────────────────────────────────────────────────── */
+
+.bulk-edit-modal-content {
+  max-width: 560px;
+  width: 95%;
+}
+
+.bulk-edit-select-all-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 8px;
+}
+
+.bulk-edit-product-list {
+  max-height: 240px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 6px 8px;
+  margin-bottom: 12px;
+  background: #fafafa;
+}
+
+.bulk-edit-product-row {
+  padding: 5px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.bulk-edit-product-row:last-child {
+  border-bottom: none;
+}
+
+.bulk-edit-check-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #333;
+}
+
+.bulk-edit-thumb {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.bulk-edit-fields {
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+}
+
+.bulk-edit-field-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.bulk-edit-field-row label.bulk-toggle-label {
+  flex: 0 0 100px;
+  font-size: 13px;
+}
+
+.bulk-edit-field-row input[type="text"],
+.bulk-edit-field-row input[type="number"],
+.bulk-edit-field-row select {
+  padding: 7px 10px;
+  border: 1px solid #ddd;
+  border-radius: 7px;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
 /* ── Bulk Add ──────────────────────────────────────────────────────────────── */
 
 .bulk-shared-section {

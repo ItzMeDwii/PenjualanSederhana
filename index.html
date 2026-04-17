@@ -767,6 +767,15 @@
         <i class="fas fa-times"></i> Batal
       </button>
     </div>
+    <div id="bulkEditModeBar" class="delete-mode-bar bulk-edit-mode-bar" style="display: none">
+      <span class="selected-count" id="bulkEditModeCount">0 produk dipilih</span>
+      <button class="btn-bulk-edit-confirm" id="btnBulkEditConfirm">
+        <i class="fas fa-pencil-alt"></i> Edit Terpilih
+      </button>
+      <button class="btn-cancel-delete" id="btnCancelBulkEditMode">
+        <i class="fas fa-times"></i> Batal
+      </button>
+    </div>
 
     <!-- Modal Rename File untuk Export -->
     <div id="renameFileModal" class="modal-overlay" style="display: none">
@@ -800,6 +809,63 @@
           </button>
           <button class="btn-rename-cancel" onclick="closeRenameFileModal()">
             <i class="fas fa-times"></i> Batal
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bulk Edit Modal -->
+    <div id="bulkEditModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeBulkEditModal()">
+      <div class="modal-content bulk-edit-modal-content" onclick="event.stopPropagation()">
+        <button class="close-modal" onclick="closeBulkEditModal()"><i class="fas fa-times"></i></button>
+        <h3>Edit Barang Massal</h3>
+        <div class="modal-scrollable-content">
+          <div class="bulk-edit-select-all-row">
+            <label class="bulk-toggle-label">
+              <input type="checkbox" onchange="selectAllBulkEdit(this.checked)"> Pilih Semua
+            </label>
+            <span id="bulkEditSelectedCount" style="font-size:13px;color:#888">0 produk dipilih</span>
+          </div>
+          <div id="bulkEditProductList" class="bulk-edit-product-list"></div>
+
+          <div class="bulk-edit-fields">
+            <p style="font-weight:600;margin:12px 0 6px;font-size:14px">Field yang ingin diubah:</p>
+
+            <div class="bulk-edit-field-row">
+              <label class="bulk-toggle-label">
+                <input type="checkbox" id="bulkEditApplyArtist"> Artist
+              </label>
+              <select id="bulkEditArtist" style="flex:1">
+                <option value="__keep__">(Tetap)</option>
+                <option value="">Tanpa Artist</option>
+              </select>
+            </div>
+
+            <div class="bulk-edit-field-row">
+              <label class="bulk-toggle-label">
+                <input type="checkbox" id="bulkEditApplyPrice"> Harga
+              </label>
+              <input type="text" id="bulkEditPrice" placeholder="Harga (Rp)" style="flex:1"
+                oninput="formatRupiahInput(this)" inputmode="numeric" pattern="[0-9.]*" />
+            </div>
+
+            <div class="bulk-edit-field-row">
+              <label class="bulk-toggle-label">
+                <input type="checkbox" id="bulkEditApplyStock"> Stok
+              </label>
+              <input type="number" id="bulkEditStock" placeholder="Stok" style="flex:1" min="0" />
+            </div>
+
+            <div class="bulk-edit-field-row">
+              <label class="bulk-toggle-label">
+                <input type="checkbox" id="bulkEditApplyTags"> Tags
+              </label>
+              <input type="text" id="bulkEditTags" placeholder="Contoh: standard, mini" style="flex:1" autocomplete="off" />
+            </div>
+          </div>
+
+          <button class="bulk-submit-btn" onclick="submitBulkEdit()">
+            <i class="fas fa-save"></i> Terapkan ke Produk Terpilih
           </button>
         </div>
       </div>

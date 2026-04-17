@@ -13,6 +13,26 @@ function updateNavbarCategories() {
   manageBtn.onclick = showCategoryModal;
   navbar.appendChild(manageBtn);
 
+  const bulkDeleteBtn = document.createElement('button');
+  bulkDeleteBtn.className = 'navbar-bulk-btn navbar-bulk-delete-btn';
+  bulkDeleteBtn.innerHTML = '<i class="fas fa-trash"></i> Hapus';
+  bulkDeleteBtn.title = 'Bulk Delete';
+  bulkDeleteBtn.onclick = () => {
+    if (isDeleteMode && bulkActionMode === 'delete') exitDeleteMode();
+    else activateBulkDeleteMode();
+  };
+  navbar.appendChild(bulkDeleteBtn);
+
+  const bulkEditBtn = document.createElement('button');
+  bulkEditBtn.className = 'navbar-bulk-btn navbar-bulk-edit-btn';
+  bulkEditBtn.innerHTML = '<i class="fas fa-pencil-alt"></i> Edit';
+  bulkEditBtn.title = 'Bulk Edit';
+  bulkEditBtn.onclick = () => {
+    if (isDeleteMode && bulkActionMode === 'edit') exitDeleteMode();
+    else activateBulkEditSelectionMode();
+  };
+  navbar.appendChild(bulkEditBtn);
+
   if (categories.filter(c => c && typeof c === 'string').length > 0) {
     const allBtn = document.createElement('button');
     allBtn.textContent = 'Semua';
@@ -281,36 +301,6 @@ function renderAllProductsTab() {
       </div>
     `;
 
-    const imgContainer = card.querySelector('.product-img-container');
-    const buttonGroup = card.querySelector('.button-group');
-
-    imgContainer.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (card.dataset.longPressJustTriggered === 'true') { e.preventDefault(); e.stopImmediatePropagation(); return; }
-      if (card.dataset.longPressTriggered === 'true') { e.preventDefault(); e.stopImmediatePropagation(); return; }
-      if (isDeleteMode) { toggleProductSelection(card); return; }
-      document.querySelectorAll('.button-group').forEach(group => {
-        if (group !== buttonGroup && group.style.display === 'flex') {
-          group.style.animation = 'fadeOutDown 0.2s forwards';
-          setTimeout(() => { group.style.display = 'none'; }, 200);
-        }
-      });
-      if (buttonGroup.style.display === 'flex') {
-        buttonGroup.style.animation = 'fadeOutDown 0.2s forwards';
-        setTimeout(() => { buttonGroup.style.display = 'none'; }, 200);
-      } else {
-        buttonGroup.style.display = 'flex';
-        buttonGroup.style.animation = 'fadeInUp 0.2s forwards';
-      }
-    });
-
-    document.addEventListener('click', (e) => {
-      if (buttonGroup.style.display === 'flex' && !card.contains(e.target)) {
-        buttonGroup.style.animation = 'fadeOutDown 0.2s forwards';
-        setTimeout(() => { buttonGroup.style.display = 'none'; }, 200);
-      }
-    });
-
     setupLongPressOnProductCard(card, category, index);
     container.appendChild(card);
   });
@@ -396,50 +386,6 @@ function renderProducts() {
             </div>
           </div>
         `;
-
-        const imgContainer = card.querySelector('.product-img-container');
-        const buttonGroup = card.querySelector('.button-group');
-
-        imgContainer.addEventListener('click', (e) => {
-          e.stopPropagation();
-          if (card.dataset.longPressJustTriggered === 'true') {
-            e.preventDefault(); e.stopImmediatePropagation(); return;
-          }
-          if (card.dataset.longPressTriggered === 'true') {
-            e.preventDefault(); e.stopImmediatePropagation(); return;
-          }
-          if (isDeleteMode) {
-            toggleProductSelection(card); return;
-          }
-          document.querySelectorAll('.button-group').forEach(group => {
-            if (group !== buttonGroup && group.style.display === 'flex') {
-              group.style.animation = 'fadeOutDown 0.2s forwards';
-              setTimeout(() => { group.style.display = 'none'; }, 200);
-            }
-          });
-          if (buttonGroup.style.display === 'flex') {
-            buttonGroup.style.animation = 'fadeOutDown 0.2s forwards';
-            setTimeout(() => { buttonGroup.style.display = 'none'; }, 200);
-          } else {
-            buttonGroup.style.display = 'flex';
-            buttonGroup.style.animation = 'fadeInUp 0.2s forwards';
-          }
-        });
-
-        buttonGroup.addEventListener('click', (e) => {
-          if (e.target === buttonGroup) {
-            e.stopPropagation();
-            buttonGroup.style.animation = 'fadeOutDown 0.2s forwards';
-            setTimeout(() => { buttonGroup.style.display = 'none'; }, 200);
-          }
-        });
-
-        document.addEventListener('click', (e) => {
-          if (buttonGroup.style.display === 'flex' && !card.contains(e.target)) {
-            buttonGroup.style.animation = 'fadeOutDown 0.2s forwards';
-            setTimeout(() => { buttonGroup.style.display = 'none'; }, 200);
-          }
-        });
 
         setupLongPressOnProductCard(card, category, index);
         container.appendChild(card);
@@ -671,6 +617,153 @@ async function addProduct(event, category) {
     showNotification("Gagal menambahkan produk! " + error.message);
   }
 }
+
+// ── Bulk Edit ─────────────────────────────────────────────────────────────────
+
+let bulkEditSelectedProducts = new Set(); // identifiers "category|index"
+let isBulkEditMode = false;
+
+function openBulkEditModal(preSelectedIds) {
+  const modal = document.getElementById('bulkEditModal');
+  const list  = document.getElementById('bulkEditProductList');
+  list.innerHTML = '';
+
+  // Determine which IDs are pre-selected
+  const preSelected = preSelectedIds instanceof Set ? preSelectedIds : new Set();
+  bulkEditSelectedProducts = new Set(preSelected);
+
+  categories.filter(c => c && typeof c === 'string').forEach(category => {
+    if (!data[category] || !data[category].length) return;
+    data[category].forEach((item, index) => {
+      const id = `${category}|${index}`;
+      // If pre-selected, only show those; else show all
+      if (preSelected.size > 0 && !preSelected.has(id)) return;
+      const row = document.createElement('div');
+      row.className = 'bulk-edit-product-row';
+      row.dataset.id = id;
+      const checked = preSelected.has(id) ? 'checked' : '';
+      row.innerHTML = `
+        <label class="bulk-edit-check-label">
+          <input type="checkbox" class="bulk-edit-checkbox" value="${id}" ${checked} onchange="toggleBulkEditSelection('${id}', this.checked)">
+          <img src="${item.image}" class="bulk-edit-thumb">
+          <span>${escapeHtml(item.code)} <small style="color:#888">(${escapeHtml(category)})</small></span>
+        </label>
+      `;
+      list.appendChild(row);
+    });
+  });
+
+  document.getElementById('bulkEditSelectedCount').textContent = `${bulkEditSelectedProducts.size} produk dipilih`;
+
+  // Reset shared fields
+  document.getElementById('bulkEditPrice').value = '';
+  document.getElementById('bulkEditTags').value = '';
+  document.getElementById('bulkEditStock').value = '';
+  const artSelect = document.getElementById('bulkEditArtist');
+  artSelect.innerHTML = '<option value="__keep__">(Tetap)</option><option value="">Tanpa Artist</option>';
+  artists.forEach(a => {
+    const opt = document.createElement('option');
+    opt.value = a;
+    opt.textContent = a;
+    artSelect.appendChild(opt);
+  });
+
+  ['Price','Tags','Stock','Artist'].forEach(f => {
+    const cb = document.getElementById(`bulkEditApply${f}`);
+    if (cb) cb.checked = false;
+  });
+
+  modal.style.display = 'flex';
+  document.body.classList.add('modal-open');
+}
+
+function confirmBulkEditSelection() {
+  if (selectedProductsForDelete.size === 0) {
+    showNotification('Pilih minimal 1 produk!');
+    return;
+  }
+  const selectedIds = new Set(selectedProductsForDelete);
+  exitDeleteMode();
+  openBulkEditModal(selectedIds);
+}
+
+function closeBulkEditModal() {
+  document.getElementById('bulkEditModal').style.display = 'none';
+  document.body.classList.remove('modal-open');
+  bulkEditSelectedProducts.clear();
+}
+
+function toggleBulkEditSelection(id, checked) {
+  if (checked) bulkEditSelectedProducts.add(id);
+  else bulkEditSelectedProducts.delete(id);
+  document.getElementById('bulkEditSelectedCount').textContent = `${bulkEditSelectedProducts.size} produk dipilih`;
+}
+
+function selectAllBulkEdit(checked) {
+  document.querySelectorAll('#bulkEditProductList .bulk-edit-checkbox').forEach(cb => {
+    cb.checked = checked;
+    toggleBulkEditSelection(cb.value, checked);
+  });
+}
+
+async function submitBulkEdit() {
+  if (bulkEditSelectedProducts.size === 0) {
+    showNotification('Pilih minimal 1 produk!');
+    return;
+  }
+
+  const applyPrice  = document.getElementById('bulkEditApplyPrice').checked;
+  const applyTags   = document.getElementById('bulkEditApplyTags').checked;
+  const applyStock  = document.getElementById('bulkEditApplyStock').checked;
+  const applyArtist = document.getElementById('bulkEditApplyArtist').checked;
+
+  if (!applyPrice && !applyTags && !applyStock && !applyArtist) {
+    showNotification('Centang minimal 1 field yang ingin diubah!');
+    return;
+  }
+
+  const priceStr = document.getElementById('bulkEditPrice').value.replace(/\./g, '').replace(',', '.');
+  const price    = applyPrice ? parseFloat(priceStr) : null;
+  const tagsInput = document.getElementById('bulkEditTags').value;
+  const tags      = applyTags ? tagsInput.split(',').map(t => t.trim().toLowerCase()).filter(t => t.length > 0) : null;
+  const stock     = applyStock ? parseInt(document.getElementById('bulkEditStock').value) : null;
+  const artist    = applyArtist ? document.getElementById('bulkEditArtist').value : null;
+
+  if (applyPrice && (isNaN(price) || price < 100)) {
+    showNotification('Harga harus diisi (minimal Rp100)!');
+    return;
+  }
+  if (applyStock && (isNaN(stock) || stock < 0)) {
+    showNotification('Stok tidak valid!');
+    return;
+  }
+
+  for (const id of bulkEditSelectedProducts) {
+    const [category, idxStr] = id.split('|');
+    const idx = parseInt(idxStr);
+    if (!data[category] || !data[category][idx]) continue;
+    const product = data[category][idx];
+    if (applyPrice)  product.price  = price;
+    if (applyTags)   product.tags   = tags;
+    if (applyStock)  product.stock  = stock;
+    if (applyArtist && artist !== '__keep__') product.artist = artist;
+  }
+
+  // Save any new artists
+  if (applyArtist && artist && artist !== '__keep__' && artist !== '' && !artists.includes(artist)) {
+    artists.push(artist);
+    artists.sort((a, b) => a.localeCompare(b));
+    await saveToIndexedDB(STORE_NAMES.ARTISTS, artists.map(a => ({ name: a })));
+    populateArtistSelects();
+  }
+
+  await saveToIndexedDB(STORE_NAMES.PRODUCTS, data);
+  renderProducts();
+  closeBulkEditModal();
+  showNotification(`${bulkEditSelectedProducts.size} produk berhasil diperbarui!`);
+}
+
+// ── End Bulk Edit ──────────────────────────────────────────────────────────────
 
 // ── Bulk Add ─────────────────────────────────────────────────────────────────
 

@@ -31,6 +31,18 @@ window.addEventListener("load", () => {
 
 window.addEventListener("resize", adjustContentMargin);
 
+// Global handler: close any open edit/delete popup when clicking outside a product card
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.product-card')) {
+    document.querySelectorAll('.button-group').forEach(g => {
+      if (g.style.display === 'flex') {
+        g.style.animation = 'fadeOutDown 0.2s forwards';
+        setTimeout(() => { g.style.display = 'none'; }, 200);
+      }
+    });
+  }
+});
+
 document.addEventListener("DOMContentLoaded", function () {
   loadFromDatabase()
     .then(() => {
@@ -93,6 +105,15 @@ document.addEventListener("DOMContentLoaded", function () {
       }
       if (deleteModeOverlay) {
         deleteModeOverlay.addEventListener("click", exitDeleteMode);
+      }
+
+      const btnBulkEditConfirm = document.getElementById("btnBulkEditConfirm");
+      const btnCancelBulkEditMode = document.getElementById("btnCancelBulkEditMode");
+      if (btnBulkEditConfirm) {
+        btnBulkEditConfirm.addEventListener("click", confirmBulkEditSelection);
+      }
+      if (btnCancelBulkEditMode) {
+        btnCancelBulkEditMode.addEventListener("click", exitDeleteMode);
       }
     })
     .catch((error) => {

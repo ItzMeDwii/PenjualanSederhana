@@ -26,6 +26,7 @@ let promoRules = [];
 let paymentMethods = [];
 let transferMethods = [];
 let isDeleteMode = false;
+let bulkActionMode = null; // 'delete' | 'edit' | null
 let selectedProductsForDelete = new Set();
 let activeTagFilters = {};
 let editingPreOrderIndex = null;

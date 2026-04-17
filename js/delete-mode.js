@@ -14,6 +14,58 @@ function cancelLongPress() {
   currentLongPressProduct = null;
 }
 
+function activateBulkDeleteMode() {
+  if (isDeleteMode) return;
+  bulkActionMode = 'delete';
+  isDeleteMode = true;
+
+  const deleteBar = document.getElementById('deleteModeBar');
+  if (deleteBar) deleteBar.style.display = 'flex';
+  document.body.classList.add('modal-open');
+
+  document.querySelectorAll('.product-card').forEach(card => {
+    card.classList.add('delete-mode');
+  });
+
+  selectedProductsForDelete.clear();
+  updateProductCheckboxes();
+  updateSelectedCount();
+
+  document.querySelectorAll('.product-card .button-group').forEach(group => {
+    group.style.display = 'none';
+    group.style.pointerEvents = 'none';
+  });
+
+  document.removeEventListener('click', preventClickDuringDeleteMode, true);
+  document.addEventListener('click', preventClickDuringDeleteMode, true);
+}
+
+function activateBulkEditSelectionMode() {
+  if (isDeleteMode) return;
+  bulkActionMode = 'edit';
+  isDeleteMode = true;
+
+  const editBar = document.getElementById('bulkEditModeBar');
+  if (editBar) editBar.style.display = 'flex';
+  document.body.classList.add('modal-open');
+
+  document.querySelectorAll('.product-card').forEach(card => {
+    card.classList.add('delete-mode');
+  });
+
+  selectedProductsForDelete.clear();
+  updateProductCheckboxes();
+  updateSelectedCount();
+
+  document.querySelectorAll('.product-card .button-group').forEach(group => {
+    group.style.display = 'none';
+    group.style.pointerEvents = 'none';
+  });
+
+  document.removeEventListener('click', preventClickDuringDeleteMode, true);
+  document.addEventListener('click', preventClickDuringDeleteMode, true);
+}
+
 function activateDeleteMode(clickedCard, category, index) {
   if (isDeleteMode) return;
 
@@ -201,7 +253,7 @@ function toggleProductSelection(card) {
 
   updateSelectedCount();
 
-  if (selectedProductsForDelete.size === 0) {
+  if (selectedProductsForDelete.size === 0 && bulkActionMode === null) {
     setTimeout(() => {
       exitDeleteMode();
     }, 300);
@@ -210,12 +262,14 @@ function toggleProductSelection(card) {
 
 function updateSelectedCount() {
   const count = selectedProductsForDelete.size;
-  const selectedCountSpan = document.getElementById('selectedCount');
-  if (selectedCountSpan) {
-    selectedCountSpan.textContent = `${count} produk dipilih`;
-  }
 
-  if (count === 0 && isDeleteMode) {
+  const deleteCountSpan = document.getElementById('selectedCount');
+  if (deleteCountSpan) deleteCountSpan.textContent = `${count} produk dipilih`;
+
+  const editCountSpan = document.getElementById('bulkEditModeCount');
+  if (editCountSpan) editCountSpan.textContent = `${count} produk dipilih`;
+
+  if (count === 0 && isDeleteMode && bulkActionMode === null) {
     exitDeleteMode();
   }
 }
@@ -309,19 +363,35 @@ function setupLongPressOnProductCard(card, category, index) {
     pressTimer = setTimeout(() => {
       if (!isDeleteMode) {
         isLongPressTriggered = true;
-
         card.dataset.longPressTriggered = 'true';
         card.dataset.longPressJustTriggered = 'true';
 
-        card.classList.add('delete-mode-transition');
-
-        activateDeleteMode(card, category, index);
-
-        setTimeout(() => {
-          if (card) {
-            card.classList.remove('delete-mode-transition');
+        if (e.target.closest('.product-img-container')) {
+          // Long press on image → show edit/delete popup
+          const buttonGroup = card.querySelector('.button-group');
+          if (buttonGroup) {
+            document.querySelectorAll('.button-group').forEach(g => {
+              if (g !== buttonGroup && g.style.display === 'flex') {
+                g.style.animation = 'fadeOutDown 0.2s forwards';
+                setTimeout(() => { g.style.display = 'none'; }, 200);
+              }
+            });
+            if (buttonGroup.style.display === 'flex') {
+              buttonGroup.style.animation = 'fadeOutDown 0.2s forwards';
+              setTimeout(() => { buttonGroup.style.display = 'none'; }, 200);
+            } else {
+              buttonGroup.style.display = 'flex';
+              buttonGroup.style.animation = 'fadeInUp 0.2s forwards';
+            }
           }
-        }, 300);
+        } else {
+          // Long press elsewhere → enter delete mode
+          card.classList.add('delete-mode-transition');
+          activateDeleteMode(card, category, index);
+          setTimeout(() => {
+            if (card) card.classList.remove('delete-mode-transition');
+          }, 300);
+        }
       }
     }, 500);
   };
@@ -418,14 +488,17 @@ function exitDeleteMode() {
   if (!isDeleteMode) return;
 
   isDeleteMode = false;
+  bulkActionMode = null;
   selectedProductsForDelete.clear();
 
   document.removeEventListener('click', preventClickDuringDeleteMode, true);
 
   const deleteBar = document.getElementById('deleteModeBar');
-  if (deleteBar) {
-    deleteBar.style.display = 'none';
-  }
+  if (deleteBar) deleteBar.style.display = 'none';
+
+  const editBar = document.getElementById('bulkEditModeBar');
+  if (editBar) editBar.style.display = 'none';
+
   document.body.classList.remove('modal-open');
 
   const overlay = document.getElementById('deleteModeOverlay');
