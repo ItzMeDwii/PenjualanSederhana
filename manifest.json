@@ -1,12 +1,12 @@
 {
-  "name": "Penjualan Barang",
-  "short_name": "Penjualan",
+  "name": "SimplePOS - Aplikasi Penjualan Sederhana",
+  "short_name": "SimplePOS",
   "description": "Aplikasi penjualan barang sederhana",
   "start_url": "./index.html",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#ffffff",
-  "theme_color": "#4CAF50",
+  "lang": "id-ID",
+  "background_color": "#34495e",
+  "theme_color": "#34495e",
   "icons": [
     {
       "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍉</text></svg>",
