@@ -5,7 +5,6 @@ if ("caches" in window) {
   caches.keys().then((keys) => {
     console.log("SW cache keys:", keys);
     const el = document.getElementById("swVersionLabel");
-    console.log("swVersionLabel el:", el);
     const version = keys.length > 0 ? `v: ${keys[0]}` : "v: None";
     if (el) {
       el.textContent = version;
