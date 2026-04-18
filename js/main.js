@@ -6,12 +6,15 @@ if ("caches" in window) {
     console.log("SW cache keys:", keys);
     const el = document.getElementById("swVersionLabel");
     console.log("swVersionLabel el:", el);
+    const version = keys.length > 0 ? `v: ${keys[0]}` : "v: None";
     if (el) {
-      el.textContent = keys.length > 0 ? `v: ${keys[0]}` : "v: None";
-      console.log("Set version label to:", el.textContent);
+      el.textContent = version;
+      console.log("Set version label to:", version);
     } else {
       console.warn("swVersionLabel element not found in DOM.");
     }
+    const appLabel = document.getElementById("appVersionLabel");
+    if (appLabel) appLabel.textContent = version;
   });
 } else {
   console.warn("Cache API not available in this context.");
