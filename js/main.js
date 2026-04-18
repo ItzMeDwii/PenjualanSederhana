@@ -1,17 +1,38 @@
 // App initialization
 
 // Show active SW cache name in sidebar
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.addEventListener("message", (e) => {
-    if (e.data && e.data.type === "CACHE_NAME") {
-      const el = document.getElementById("swVersionLabel");
-      if (el) el.textContent = `v: ${e.data.value}`;
-    }
+if ("caches" in window) {
+  caches.keys().then((keys) => {
+    console.log("SW cache keys:", keys);
+    const el = document.getElementById("swVersionLabel");
+    if (el && keys.length > 0) el.textContent = `v: ${keys[0]}`;
   });
+}
+
+// SW update detection — show banner when a new version is waiting
+let swWaitingWorker = null;
+
+function applySwUpdate() {
+  document.getElementById("swUpdateBanner").style.display = "none";
+  if (swWaitingWorker) {
+    swWaitingWorker.postMessage({ type: "SKIP_WAITING" });
+  }
+}
+
+if ("serviceWorker" in navigator) {
   navigator.serviceWorker.ready.then((registration) => {
-    if (registration.active) {
-      registration.active.postMessage({ type: "GET_CACHE_NAME" });
-    }
+    registration.addEventListener("updatefound", () => {
+      const newWorker = registration.installing;
+      newWorker.addEventListener("statechange", () => {
+        if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+          swWaitingWorker = newWorker;
+          document.getElementById("swUpdateBanner").style.display = "flex";
+        }
+      });
+    });
+  });
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    window.location.reload();
   });
 }
 

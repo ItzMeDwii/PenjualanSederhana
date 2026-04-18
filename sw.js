@@ -1,4 +1,4 @@
-const CACHE_NAME = 'penjualan-20260418-2';
+const CACHE_NAME = 'penjualan-20260418-3';
 
 const STATIC_ASSETS = [
   './',
@@ -33,10 +33,13 @@ const STATIC_ASSETS = [
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css',
 ];
 
-// Respond to cache name queries from the page
+// Respond to cache name queries and update requests from the page
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'GET_CACHE_NAME') {
     event.source.postMessage({ type: 'CACHE_NAME', value: CACHE_NAME });
+  }
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
   }
 });
 
