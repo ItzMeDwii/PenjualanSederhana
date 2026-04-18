@@ -112,6 +112,10 @@ document.addEventListener("DOMContentLoaded", function () {
         .getElementById("fullscreenButton")
         .addEventListener("click", toggleFullscreen);
 
+      document
+        .getElementById("refreshButton")
+        .addEventListener("click", () => window.location.reload());
+
       document.addEventListener("fullscreenchange", () => {
         const fullscreenButton = document.getElementById("fullscreenButton");
         if (document.fullscreenElement) {
