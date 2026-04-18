@@ -51,7 +51,7 @@ if ("serviceWorker" in navigator) {
     });
   });
   navigator.serviceWorker.addEventListener("controllerchange", () => {
-    window.location.reload();
+    setTimeout(() => window.location.reload(), 3000);
   });
 }
 

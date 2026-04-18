@@ -1,4 +1,4 @@
-const CACHE_NAME = 'penjualan-20260418-12';
+const CACHE_NAME = 'penjualan-20260418-13';
 
 const STATIC_ASSETS = [
   './',
@@ -76,7 +76,7 @@ self.addEventListener('fetch', (event) => {
   if (event.request.url.includes('sw.js')) return;
 
   event.respondWith(
-    caches.match(event.request).then((cached) => {
+    caches.open(CACHE_NAME).then((cache) => cache.match(event.request)).then((cached) => {
       if (cached) return cached;
 
       return fetch(event.request)
@@ -97,7 +97,7 @@ self.addEventListener('fetch', (event) => {
         .catch(() => {
           // If fetch fails and nothing is cached, return offline fallback for HTML
           if (event.request.destination === 'document') {
-            return caches.match('./index.html');
+            return caches.open(CACHE_NAME).then((cache) => cache.match('./index.html'));
           }
         });
     })
