@@ -1,4 +1,4 @@
-const CACHE_NAME = 'penjualan-20260418-8';
+const CACHE_NAME = 'penjualan-20260418-9';
 
 const STATIC_ASSETS = [
   './',
@@ -69,6 +69,8 @@ self.addEventListener('fetch', (event) => {
   // Only handle GET requests with http/https schemes
   if (event.request.method !== 'GET') return;
   if (!event.request.url.startsWith('http')) return;
+  // Never cache the service worker itself
+  if (event.request.url.includes('sw.js')) return;
 
   event.respondWith(
     caches.match(event.request).then((cached) => {
