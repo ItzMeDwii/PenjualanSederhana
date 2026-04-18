@@ -5,8 +5,13 @@ if ("caches" in window) {
   caches.keys().then((keys) => {
     console.log("SW cache keys:", keys);
     const el = document.getElementById("swVersionLabel");
-    if (el && keys.length > 0) el.textContent = `v: ${keys[0]}`;
-    else console.warn("No SW caches found yet — SW may not be installed.");
+    console.log("swVersionLabel el:", el);
+    if (el) {
+      el.textContent = keys.length > 0 ? `v: ${keys[0]}` : "v: None";
+      console.log("Set version label to:", el.textContent);
+    } else {
+      console.warn("swVersionLabel element not found in DOM.");
+    }
   });
 } else {
   console.warn("Cache API not available in this context.");
