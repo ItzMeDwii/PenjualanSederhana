@@ -1,4 +1,4 @@
-const CACHE_NAME = 'penjualan-20260418-6';
+const CACHE_NAME = 'penjualan-20260418-7';
 
 const STATIC_ASSETS = [
   './',
@@ -46,9 +46,8 @@ self.addEventListener('message', (event) => {
 // Install: cache all static assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS)).then(() => self.skipWaiting())
   );
-  self.skipWaiting();
 });
 
 // Activate: clean up old caches
