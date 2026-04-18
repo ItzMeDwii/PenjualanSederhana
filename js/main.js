@@ -2,26 +2,17 @@
 
 // Show active SW cache name in sidebar
 if ("serviceWorker" in navigator) {
-  function requestCacheName() {
-    if (navigator.serviceWorker.controller) {
-      navigator.serviceWorker.controller.postMessage({
-        type: "GET_CACHE_NAME",
-      });
-    }
-  }
   navigator.serviceWorker.addEventListener("message", (e) => {
     if (e.data && e.data.type === "CACHE_NAME") {
       const el = document.getElementById("swVersionLabel");
       if (el) el.textContent = `v: ${e.data.value}`;
     }
   });
-  // On reload when SW is already controlling the page
-  navigator.serviceWorker.ready.then(requestCacheName);
-  // On first load: SW claims the page after installing (skipWaiting + clients.claim)
-  navigator.serviceWorker.addEventListener(
-    "controllerchange",
-    requestCacheName,
-  );
+  navigator.serviceWorker.ready.then((registration) => {
+    if (registration.active) {
+      registration.active.postMessage({ type: "GET_CACHE_NAME" });
+    }
+  });
 }
 
 window.addEventListener("load", () => {
