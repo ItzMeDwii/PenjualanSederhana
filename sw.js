@@ -1,4 +1,4 @@
-const CACHE_NAME = 'penjualan-20260418-9';
+const CACHE_NAME = 'penjualan-20260418-10';
 
 const STATIC_ASSETS = [
   './',
@@ -50,7 +50,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Activate: clean up old caches
+// Activate: clean up old caches, then reload all open clients
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -59,9 +59,12 @@ self.addEventListener('activate', (event) => {
           .filter((key) => key !== CACHE_NAME)
           .map((key) => caches.delete(key))
       )
-    )
+    ).then(() => self.clients.claim())
+      .then(() => self.clients.matchAll({ type: 'window' }))
+      .then((clients) => {
+        clients.forEach((client) => client.navigate(client.url));
+      })
   );
-  self.clients.claim();
 });
 
 // Fetch: cache-first for static assets, network-first for everything else
