@@ -6,7 +6,19 @@ if ("caches" in window) {
     console.log("SW cache keys:", keys);
     const el = document.getElementById("swVersionLabel");
     if (el && keys.length > 0) el.textContent = `v: ${keys[0]}`;
+    else console.warn("No SW caches found yet — SW may not be installed.");
   });
+} else {
+  console.warn("Cache API not available in this context.");
+}
+
+if ("serviceWorker" in navigator) {
+  console.log("SW controller:", navigator.serviceWorker.controller);
+  navigator.serviceWorker.ready.then((reg) => {
+    console.log("SW ready, active:", reg.active?.state, "scope:", reg.scope);
+  });
+} else {
+  console.warn("Service workers not supported.");
 }
 
 // SW update detection — show banner when a new version is waiting
