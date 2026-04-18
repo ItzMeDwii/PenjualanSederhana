@@ -469,8 +469,8 @@ body.cart-sidebar-open {
 .cart-modal-content {
   padding: 15px;
   overflow-y: auto;
-  flex-grow: 1;
-  max-height: calc(500px - 120px);
+  flex: 1 1 0;
+  min-height: 0;
 }
 .cart-item {
   display: flex;
@@ -506,8 +506,8 @@ body.cart-sidebar-open {
   background: #f5f5f5;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .cart-item-controls {
@@ -2422,6 +2422,23 @@ input:checked + .slider .emoji.moon {
   text-align: center;
 }
 
+.quick-count-input {
+  width: 100%;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+  text-align: right;
+}
+
+.quick-count-input:focus {
+  outline: none;
+  border-color: var(--professional-info);
+  box-shadow: 0 0 0 2px rgba(23, 162, 184, 0.2);
+}
+
 .quick-count-buttons {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -2976,6 +2993,23 @@ input:checked + .slider .emoji.moon {
   color: var(--professional-dark);
 }
 
+.checkout-kembalian-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 15px;
+  padding: 4px 0;
+  color: var(--professional-dark);
+}
+
+.checkout-kembalian-row.kembalian-lebih {
+  font-weight: bold;
+  color: #2e7d32;
+}
+
+.checkout-kembalian-row.kembalian-kurang {
+  font-weight: bold;
+}
+
 .payment-method-options {
   display: flex;
   gap: 15px;
@@ -3061,6 +3095,17 @@ input:checked + .slider .emoji.moon {
 .cart-modal-footer .btn-checkout-cart:hover {
   background: #f151e4;
   transform: translateY(-2px);
+}
+
+.btn-reset-cart {
+  background-color: #e53935 !important;
+  color: white !important;
+  border-color: #e53935 !important;
+}
+
+.btn-reset-cart:hover {
+  background-color: #b71c1c !important;
+  border-color: #b71c1c !important;
 }
 
 .btn-payment-option.btn-transfer-dynamic {
@@ -5419,18 +5464,6 @@ form.add-form label:has(+ select[name="artist"]) {
   background: #fff;
 }
 
-
-  background-color: #8e44ad;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 16px;
-  font-size: 14px;
-  cursor: pointer;
-  width: 100%;
-  margin-top: 6px;
-  transition: background-color 0.2s;
-}
 .bulk-open-btn:hover {
   background-color: #7d3c98;
 }

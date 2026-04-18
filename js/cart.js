@@ -31,6 +31,9 @@ function updateCartBadge() {
   }
   const itemCount = cart.reduce((sum, item) => sum + item.qty, 0);
   cartBadge.textContent = itemCount;
+
+  const resetBtn = document.getElementById('resetCartNavBtn');
+  if (resetBtn) resetBtn.style.display = cart.length > 0 ? '' : 'none';
 }
 
 function renderCartModalContent() {
@@ -112,11 +115,12 @@ function renderCartModalContent() {
     quickCountSection.className = 'quick-count-section';
     quickCountSection.innerHTML = `
       <div class="quick-count-title">Hitung Kembalian:</div>
+      <input type="number" id="manualAmountInput" class="quick-count-input" placeholder="Masukkan jumlah uang" min="0" oninput="updateQuickCountResult()" />
       <div class="quick-count-buttons">
-        <button onclick="calculateQuickChange(10000)" class="quick-count-btn">10.000</button>
-        <button onclick="calculateQuickChange(20000)" class="quick-count-btn">20.000</button>
-        <button onclick="calculateQuickChange(50000)" class="quick-count-btn">50.000</button>
-        <button onclick="calculateQuickChange(100000)" class="quick-count-btn">100.000</button>
+        <button onclick="calculateQuickChange(10000)" class="quick-count-btn">+10.000</button>
+        <button onclick="calculateQuickChange(20000)" class="quick-count-btn">+20.000</button>
+        <button onclick="calculateQuickChange(50000)" class="quick-count-btn">+50.000</button>
+        <button onclick="calculateQuickChange(100000)" class="quick-count-btn">+100.000</button>
       </div>
       <div class="quick-count-result" id="quickCountResult">
         Kembalian: Rp0
@@ -124,15 +128,7 @@ function renderCartModalContent() {
     `;
     cartModalFooter.appendChild(quickCountSection);
   } else {
-    const totalForQuickCount = Math.floor(total);
-    const manualAmountInput = document.getElementById('manualAmountInput');
-    if (manualAmountInput && manualAmountInput.value) {
-      const amount = parseInt(manualAmountInput.value.replace(/\./g, ''));
-      const change = amount - totalForQuickCount;
-      document.getElementById('quickCountResult').innerHTML = change >= 0 ?
-        `Kembalian: Rp${formatRupiah(change)}` :
-        `Kembalian: <span style="color:red;">Kurang Rp${formatRupiah(Math.abs(change))}</span>`;
-    }
+    updateQuickCountResult();
   }
 
   let checkoutBtn = cartModalFooter.querySelector('.btn-checkout-cart');
@@ -143,22 +139,41 @@ function renderCartModalContent() {
     checkoutBtn.onclick = showCheckoutConfirmationModal;
     cartModalFooter.appendChild(checkoutBtn);
   }
+
 }
 
-function calculateQuickChange(amountPaid) {
+async function resetCart() {
+  if (!confirm('Kosongkan semua item dari keranjang?')) return;
+  cart = [];
+  await saveToIndexedDB(STORE_NAMES.CART, cart);
+  updateCartBadge();
+  renderProducts();
+  renderCartModalContent();
+}
+
+function calculateQuickChange(addAmount) {
+  const input = document.getElementById('manualAmountInput');
+  if (!input) return;
+  const current = parseFloat(input.value) || 0;
+  input.value = current + addAmount;
+  updateQuickCountResult();
+}
+
+function updateQuickCountResult() {
   const { total } = calculateCartTotalWithPromo();
-  const change = amountPaid - total;
+  const input = document.getElementById('manualAmountInput');
   const quickCountResultElement = document.getElementById('quickCountResult');
-
-  if (!quickCountResultElement) return;
-
-  if (change < 0) {
+  if (!input || !quickCountResultElement) return;
+  const amountPaid = parseFloat(input.value) || 0;
+  const change = amountPaid - total;
+  currentAmountInput = input.value;
+  if (amountPaid === 0) {
+    quickCountResultElement.innerHTML = 'Kembalian: Rp0';
+  } else if (change < 0) {
     quickCountResultElement.innerHTML = `Kembalian: <span style="color: #e53935;">Kurang Rp${formatRupiah(Math.abs(change))}</span>`;
   } else {
     quickCountResultElement.innerHTML = `Kembalian: <span style="color: #2e7d32;">Rp${formatRupiah(change)}</span>`;
   }
-
-  currentAmountInput = amountPaid.toString();
 }
 
 async function decreaseCartItem(index) {

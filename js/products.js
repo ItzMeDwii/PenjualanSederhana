@@ -64,6 +64,14 @@ function updateNavbarCategories() {
   };
   actionsGroup.appendChild(bulkEditBtn);
 
+  const resetCartBtn = document.createElement('button');
+  resetCartBtn.className = 'btn-reset-cart';
+  resetCartBtn.id = 'resetCartNavBtn';
+  resetCartBtn.innerHTML = '<i class="fas fa-trash"></i> Reset Keranjang';
+  resetCartBtn.onclick = resetCart;
+  resetCartBtn.style.display = cart.length > 0 ? '' : 'none';
+  actionsGroup.appendChild(resetCartBtn);
+
   if (categories.filter(c => c && typeof c === 'string').length > 0) {
     const allBtn = document.createElement('button');
     allBtn.textContent = 'Semua';

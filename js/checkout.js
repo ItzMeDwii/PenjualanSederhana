@@ -92,10 +92,23 @@ function showCheckoutConfirmationModal() {
 
   document.getElementById('checkoutGrandTotal').textContent = formatRupiah(grandTotal);
 
+  const amountPaidForConfirm = parseFloat(currentAmountInput) || 0;
+  const changeForConfirm = amountPaidForConfirm - grandTotal;
+  const kembalianHtml = amountPaidForConfirm > 0 ? `
+    <div class="checkout-kembalian-row">
+      <span>Dibayar:</span>
+      <span>Rp${formatRupiah(amountPaidForConfirm)}</span>
+    </div>
+    <div class="checkout-kembalian-row ${changeForConfirm < 0 ? 'kembalian-kurang' : 'kembalian-lebih'}">
+      <span>Kembalian:</span>
+      <span>${changeForConfirm >= 0 ? 'Rp' + formatRupiah(changeForConfirm) : '<span style="color:#e53935;">Kurang Rp' + formatRupiah(Math.abs(changeForConfirm)) + '</span>'}</span>
+    </div>` : '';
+
   checkoutConfirmationContent.innerHTML = `
     <div class="checkout-confirmation-header">
       <h4>Pilih Metode Pembayaran</h4>
       <p>Total Belanja: <strong>Rp<span id="checkoutGrandTotal">${formatRupiah(grandTotal)}</span></strong></p>
+      ${kembalianHtml}
     </div>
     <div class="payment-method-options" id="mainPaymentMethodButtons">
     </div>
